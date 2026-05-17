@@ -708,3 +708,19 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 // Carga Inicial
 refrescarPanel();
+
+// --- 📁 6. CONTROL DE NAVEGACIÓN POR PESTAÑAS ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Quitar clase activa de todos los botones de pestaña
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    // Quitar clase activa de todos los contenedores de contenido
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Activar botón actual
+    btn.classList.add('active');
+    // Activar contenido correspondiente
+    const targetId = btn.dataset.target;
+    document.getElementById(targetId).classList.add('active');
+  });
+});

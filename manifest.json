@@ -20,6 +20,15 @@
     "default_title": "AutoClicker Pro",
     "default_icon": "assets/icon.svg"
   },
+  "action": {
+    "default_icon": "assets/icon.svg",
+    "default_title": "AutoClicker Pro"
+  },
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ]
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "autoclicker-pro@ayarachifuentes",

@@ -11,10 +11,14 @@ async function refrescarPanel() {
 
   // 1. Mostrar favicon
   const faviconBox = document.getElementById('favicon-box');
+  faviconBox.textContent = "";
   if (tab.favIconUrl && tab.favIconUrl.startsWith('http')) {
-    faviconBox.innerHTML = `<img src="${tab.favIconUrl}" alt="Icon">`;
+    const img = document.createElement('img');
+    img.src = tab.favIconUrl;
+    img.alt = "Icon";
+    faviconBox.appendChild(img);
   } else {
-    faviconBox.innerHTML = "🌐";
+    faviconBox.textContent = "🌐";
   }
 
   // 2. Título de contexto
@@ -448,7 +452,7 @@ async function comenzarSeleccionVisual() {
 
   const btnInspect = document.getElementById('btn-inspect-element');
   btnInspect.classList.add('active-inspecting');
-  btnInspect.innerHTML = "● Seleccionando...";
+  btnInspect.textContent = "● Seleccionando...";
   escribirLogTerminal("🎯 Modo Inspección Activado.\nVe a la página web y haz clic en el botón o elemento que deseas automatizar.\n(La extensión detectará automáticamente todos los botones idénticos del listado)");
 
   try {
@@ -634,7 +638,7 @@ async function comenzarSeleccionVisual() {
     }
     
     btnInspect.classList.remove('active-inspecting');
-    btnInspect.innerHTML = "🎯 Apuntar";
+    btnInspect.textContent = "🎯 Apuntar";
   }
 }
 
@@ -671,7 +675,7 @@ browser.runtime.onMessage.addListener((message) => {
     }
     
     btnInspect.classList.remove('active-inspecting');
-    btnInspect.innerHTML = "🎯 Apuntar";
+    btnInspect.textContent = "🎯 Apuntar";
     
     // Iniciar el clicker de forma automática e inmediata (con 600ms de retraso para el foco)
     setTimeout(() => {
@@ -681,7 +685,7 @@ browser.runtime.onMessage.addListener((message) => {
   } else if (message.type === 'DTK_SELECTION_CANCELLED') {
     escribirLogTerminal("⚠️ Selección cancelada por el usuario.", true);
     btnInspect.classList.remove('active-inspecting');
-    btnInspect.innerHTML = "🎯 Apuntar";
+    btnInspect.textContent = "🎯 Apuntar";
   }
 });
 

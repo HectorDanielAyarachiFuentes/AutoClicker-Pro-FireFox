@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "AutoClicker Pro",
+  "version": "1.3.0",
+  "description": "Auto-Clicker premium y seguro para automatizar clics en cualquier página web.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "48": "assets/icon.svg",
+    "96": "assets/icon.svg",
+    "128": "assets/icon.svg"
+  },
+  "sidebar_action": {
+    "default_panel": "views/sidebar.html",
+    "default_title": "AutoClicker Pro",
+    "default_icon": "assets/icon.svg"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "142.0"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoClicker Pro</title>
+  <!-- Importar tipografía premium de Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/sidebar.css">
+</head>
+<body>
+  
+  <!-- Encabezado contextual dinámico -->
+  <header class="app-header">
+    <div class="header-main">
+      <span id="favicon-box" class="favicon-icon">🌐</span>
+      <h2 id="titulo-contexto" class="app-title">AutoClicker Pro</h2>
+    </div>
+    <div class="header-status">
+      <span id="page-domain" class="page-domain">...</span>
+    </div>
+  </header>
+
+  <main class="app-content">
+    
+    <!-- Auto-Clicker de Elementos por CSS -->
+    <section class="clicker-container">
+      
+      <!-- Selector de presets rápidas -->
+      <div class="control-card">
+        <div class="input-group">
+          <label for="clicker-preset">📋 Plantilla Rápida</label>
+          <select id="clicker-preset">
+            <option value="custom">⚙️ Personalizado (Escribe tu selector)</option>
+            <option value="github-follow-preset">👥 GitHub: Auto-Follow (Seguir todos)</option>
+            <option value="github-unfollow-preset">🚫 GitHub: Auto-Unfollow (Dejar de seguir)</option>
+            <option value="next-button">➡️ Formulario: Botón Siguiente / Continuar</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Selector CSS -->
+      <div class="control-card">
+        <div class="input-group">
+          <label for="clicker-selector">🎯 Selector CSS del Elemento</label>
+          <div class="selector-input-container">
+            <input type="text" id="clicker-selector" placeholder="ej: .btn-recargar, button[type='submit']">
+            <button id="btn-inspect-element" class="btn-inspect" title="Seleccionar elemento en la página visualmente">🎯 Apuntar</button>
+          </div>
+          <small class="help-text">Haz clic en <strong>Apuntar</strong>, selecciona un botón en la página web, y el clicker <strong>se iniciará automáticamente</strong> detectando todos los botones similares de la lista.</small>
+        </div>
+      </div>
+
+      <!-- Configuración de Intervalos -->
+      <div class="control-card">
+        <label class="card-label">⏱️ Intervalo de Tiempo</label>
+        <div class="interval-control-row">
+          <input type="range" id="clicker-interval-range" min="100" max="10000" step="100" value="1500">
+          <div class="interval-value-display">
+            <input type="number" id="clicker-interval-number" min="100" max="10000" step="100" value="1500">
+            <span class="unit">ms</span>
+          </div>
+        </div>
+        <div class="quick-intervals">
+          <button class="btn-time-shortcut" data-ms="500">Rápido (0.5s)</button>
+          <button class="btn-time-shortcut" data-ms="1500">Humano (1.5s)</button>
+          <button class="btn-time-shortcut" data-ms="3000">Seguro (3.0s)</button>
+        </div>
+      </div>
+
+      <!-- Estrategia de Clics -->
+      <div class="control-card">
+        <label class="card-label">⚡ Estrategia de Clics</label>
+        <div class="segmented-radio">
+          <label class="radio-option">
+            <input type="radio" name="clicker-strategy" value="sequential" checked>
+            <span class="radio-label-text">🔄 Secuencial</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="clicker-strategy" value="all">
+            <span class="radio-label-text">💥 Simultáneo</span>
+          </label>
+        </div>
+        <small class="help-text">Secuencial hace clics con delay uno por uno. Simultáneo hace clic a todos de un golpe.</small>
+      </div>
+
+      <!-- Panel de Estado y Estadísticas -->
+      <div class="status-panel">
+        <div class="status-item">
+          <span class="status-label">Estado</span>
+          <span id="status-badge" class="badge-stopped">● DETENIDO</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Clicks Hechos</span>
+          <span id="clicks-count" class="stat-value">0</span>
+        </div>
+      </div>
+
+      <!-- Botones de Control Principal -->
+      <div class="action-buttons-group">
+        <button id="btn-iniciar-clicker" class="btn-start">▶️ Iniciar Clicker</button>
+        <button id="btn-detener-clicker" class="btn-stop" disabled>⏹️ Detener</button>
+      </div>
+
+      <!-- Consola Hacker / Terminal Logs -->
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <span class="terminal-title">💻 Consola de Eventos</span>
+          <button id="btn-clear-logs" class="btn-clear-terminal" title="Limpiar Consola">Limpiar</button>
+        </div>
+        <pre id="terminal-logs" class="terminal-content">Esperando que inicies el clicker...</pre>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="../js/sidebar.js"></script>
+</body>
+</html>

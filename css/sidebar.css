@@ -824,3 +824,161 @@ input:checked + .slider-toggle:before {
   font-weight: 600;
   font-size: 11.5px !important;
 }
+
+/* ==========================================================================
+   🔄 Simple & Advanced Mode Toggles & Simple Mode UI
+   ========================================================================== */
+
+/* Toggle mechanism */
+body.mode-simple .advanced-only {
+  display: none !important;
+}
+
+body.mode-advanced .simple-only {
+  display: none !important;
+}
+
+/* Mode selector */
+.mode-selector-card {
+  margin-bottom: 14px;
+}
+
+.segmented-control {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 4px;
+  box-shadow: var(--glass-shadow);
+}
+
+.mode-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mode-btn:hover {
+  color: var(--text-primary);
+}
+
+.mode-btn.active {
+  background: var(--primary-gradient);
+  color: #07090e;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 242, 254, 0.3);
+}
+
+/* Simple Mode targeted element box */
+.simple-target-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-input);
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  transition: var(--transition-fast);
+}
+
+.simple-target-box.has-target {
+  border: 1px solid var(--success-color);
+  background: rgba(57, 211, 83, 0.04);
+  box-shadow: 0 0 15px rgba(57, 211, 83, 0.05);
+}
+
+.simple-target-icon {
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  transition: var(--transition-fast);
+}
+
+.simple-target-box.has-target .simple-target-icon {
+  border-color: var(--success-color);
+  background: rgba(57, 211, 83, 0.1);
+  color: var(--success-color);
+  animation: pulse-target-icon 2s infinite ease-in-out;
+}
+
+@keyframes pulse-target-icon {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); box-shadow: 0 0 8px var(--success-glow); }
+  100% { transform: scale(1); }
+}
+
+.simple-target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.simple-target-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.simple-target-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Big friendly button */
+.btn-inspect-large {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #07090e;
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: 0.2px;
+  border: none;
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.25);
+}
+
+.btn-inspect-large:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+}
+
+.btn-inspect-large:active {
+  transform: translateY(0);
+}
+
+.btn-inspect-large.active-inspecting {
+  background: var(--success-color);
+  color: #07090e;
+  box-shadow: 0 0 15px var(--success-glow);
+  animation: pulse-inspect 1.2s infinite ease-in-out;
+}

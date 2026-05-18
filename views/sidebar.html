@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/sidebar.css">
 </head>
-<body>
+<body class="mode-simple">
   
   <!-- Encabezado contextual dinámico -->
   <header class="app-header">
@@ -32,8 +32,53 @@
     <section id="clicker-section" class="tab-content active">
       <div class="clicker-container">
         
+        <!-- Selector de Modo (Sencillo vs Avanzado) -->
+        <div class="mode-selector-card">
+          <div class="segmented-control">
+            <button id="btn-mode-simple" class="mode-btn active" data-mode="simple">✨ Modo Sencillo</button>
+            <button id="btn-mode-advanced" class="mode-btn" data-mode="advanced">⚙️ Modo Avanzado</button>
+          </div>
+        </div>
+
+        <!-- CONTROLES MODO SENCILLO -->
+        <div class="simple-only">
+          <!-- Card de Apuntar Elemento -->
+          <div class="control-card simple-card-main">
+            <div id="simple-target-status" class="simple-target-box">
+              <span class="simple-target-icon">✨</span>
+              <div class="simple-target-info">
+                <span class="simple-target-title">¿Qué quieres clickear?</span>
+                <span id="simple-target-desc" class="simple-target-desc">Haz clic en <strong>"Apuntar Elemento"</strong> y toca el botón que quieras automatizar en la web.</span>
+              </div>
+            </div>
+            <button id="btn-inspect-simple" class="btn-inspect-large">🎯 Apuntar Elemento</button>
+          </div>
+
+          <!-- Card de Velocidad Simplificada -->
+          <div class="control-card">
+            <label class="card-label">⏱️ Velocidad de Clics</label>
+            <div class="segmented-radio simple-speed-radio">
+              <label class="radio-option">
+                <input type="radio" name="simple-speed" value="500">
+                <span class="radio-label-text">⚡ Rápido (0.5s)</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="simple-speed" value="1500" checked>
+                <span class="radio-label-text">🛡️ Seguro (1.5s)</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="simple-speed" value="3000">
+                <span class="radio-label-text">🐢 Lento (3s)</span>
+              </label>
+            </div>
+            <small class="help-text">El modo <strong>Seguro</strong> incluye pausas humanas preventivas para evitar bloqueos.</small>
+          </div>
+        </div>
+
+        <!-- CONTROLES MODO AVANZADO -->
+
         <!-- Selector de presets rápidas -->
-        <div class="control-card">
+        <div class="control-card advanced-only">
           <div class="input-group">
             <label for="clicker-preset">📋 Plantilla Rápida</label>
             <select id="clicker-preset">
@@ -46,7 +91,7 @@
         </div>
 
         <!-- Selector CSS -->
-        <div class="control-card">
+        <div class="control-card advanced-only">
           <div class="input-group">
             <label for="clicker-selector">🎯 Selector CSS del Elemento</label>
             <div class="selector-input-container">
@@ -63,7 +108,7 @@
         </div>
 
         <!-- Configuración de Intervalos -->
-        <div class="control-card">
+        <div class="control-card advanced-only">
           <label class="card-label">⏱️ Intervalo de Tiempo</label>
           <div class="interval-control-row">
             <input type="range" id="clicker-interval-range" min="100" max="10000" step="100" value="1500">
@@ -99,7 +144,7 @@
         </div>
 
         <!-- Estrategia de Clics -->
-        <div class="control-card">
+        <div class="control-card advanced-only">
           <label class="card-label">⚡ Estrategia de Clics</label>
           <div class="segmented-radio">
             <label class="radio-option">
@@ -115,7 +160,7 @@
         </div>
 
         <!-- Efectos de Sonido -->
-        <div class="control-card">
+        <div class="control-card advanced-only">
           <div class="toggle-row-simple">
             <span class="card-label-sub">🔊 Efecto de Sonido Arcade</span>
             <label class="switch">
@@ -153,7 +198,7 @@
         </div>
 
         <!-- Consola Hacker / Terminal Logs -->
-        <div class="terminal-box">
+        <div class="terminal-box advanced-only">
           <div class="terminal-header">
             <span class="terminal-title">💻 Consola de Eventos</span>
             <button id="btn-clear-logs" class="btn-clear-terminal" title="Limpiar Consola">Limpiar</button>

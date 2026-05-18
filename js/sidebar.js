@@ -37,6 +37,8 @@ async function refrescarPanel() {
   // 4. Cargar presets inteligentes dependiendo de la url
   autodetectarPresetsUrl(tab.url);
   
+  actualizarVisualSelectorSimple();
+  
   // 5. Iniciar polling del clicker por si hay una tarea en progreso en esta pestaña
   comenzarPollingEstado(tab.id);
 }
@@ -538,9 +540,7 @@ async function comenzarSeleccionVisual() {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
-  const btnInspect = document.getElementById('btn-inspect-element');
-  btnInspect.classList.add('active-inspecting');
-  btnInspect.textContent = "● Seleccionando...";
+  setInspectActive(true);
   escribirLogTerminal("🎯 Modo Inspección Activado.\nVe a la página web y haz clic en el botón o elemento que deseas automatizar.\n(La extensión detectará automáticamente todos los botones idénticos del listado)");
 
   try {
@@ -725,15 +725,12 @@ async function comenzarSeleccionVisual() {
       escribirLogTerminal(`❌ Error de Selección: ${err.message || err}`, true);
     }
     
-    btnInspect.classList.remove('active-inspecting');
-    btnInspect.textContent = "🎯 Apuntar";
+    setInspectActive(false);
   }
 }
 
 // Receptor de Mensajería Nativa (Web -> Sidebar)
 browser.runtime.onMessage.addListener((message) => {
-  const btnInspect = document.getElementById('btn-inspect-element');
-  
   if (message.type === 'DTK_ELEMENT_SELECTED') {
     const { selector, textFilter, isGitHub } = message;
     
@@ -763,8 +760,8 @@ browser.runtime.onMessage.addListener((message) => {
       escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\nSelector generalizado: "${selector}"${logTextFilter}.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
     }
     
-    btnInspect.classList.remove('active-inspecting');
-    btnInspect.textContent = "🎯 Apuntar";
+    setInspectActive(false);
+    actualizarVisualSelectorSimple();
     
     // Iniciar el clicker de forma automática e inmediata (con 600ms de retraso para el foco)
     setTimeout(() => {
@@ -773,10 +770,86 @@ browser.runtime.onMessage.addListener((message) => {
     
   } else if (message.type === 'DTK_SELECTION_CANCELLED') {
     escribirLogTerminal("⚠️ Selección cancelada por el usuario.", true);
-    btnInspect.classList.remove('active-inspecting');
-    btnInspect.textContent = "🎯 Apuntar";
+    setInspectActive(false);
   }
 });
+
+// --- 🛠️ HELPER STATE FOR SIMPLE/ADVANCED MODES ---
+function setInspectActive(active) {
+  const btnAdv = document.getElementById('btn-inspect-element');
+  const btnSim = document.getElementById('btn-inspect-simple');
+  
+  if (active) {
+    if (btnAdv) {
+      btnAdv.classList.add('active-inspecting');
+      btnAdv.textContent = "● Seleccionando...";
+    }
+    if (btnSim) {
+      btnSim.classList.add('active-inspecting');
+      btnSim.textContent = "● Seleccionando...";
+    }
+  } else {
+    if (btnAdv) {
+      btnAdv.classList.remove('active-inspecting');
+      btnAdv.textContent = "🎯 Apuntar";
+    }
+    if (btnSim) {
+      btnSim.classList.remove('active-inspecting');
+      btnSim.textContent = "🎯 Apuntar Elemento";
+    }
+  }
+}
+
+function actualizarVisualSelectorSimple() {
+  const selector = document.getElementById('clicker-selector').value.trim();
+  const textFilter = document.getElementById('clicker-text-filter').value.trim();
+  const descEl = document.getElementById('simple-target-desc');
+  const iconEl = document.querySelector('.simple-target-icon');
+  const titleEl = document.querySelector('.simple-target-title');
+  const simpleTargetBox = document.getElementById('simple-target-status');
+
+  if (selector) {
+    if (iconEl) iconEl.textContent = "🎯";
+    if (titleEl) titleEl.textContent = "¡Elemento Listo!";
+    if (descEl) {
+      const label = textFilter ? `Texto "${textFilter}"` : `Selector CSS "${selector}"`;
+      descEl.innerHTML = `Detectado: <strong style="color: var(--success-color);">${label}</strong>.<br><small style="color: var(--text-secondary);">El clicker comenzará automáticamente a pulsar este botón.</small>`;
+    }
+    if (simpleTargetBox) simpleTargetBox.classList.add('has-target');
+  } else {
+    if (iconEl) iconEl.textContent = "✨";
+    if (titleEl) titleEl.textContent = "¿Qué quieres clickear?";
+    if (descEl) descEl.innerHTML = `Haz clic en <strong>"Apuntar Elemento"</strong> y toca el botón que quieras automatizar en la web.`;
+    if (simpleTargetBox) simpleTargetBox.classList.remove('has-target');
+  }
+}
+
+// Configurar modo inicial (Sencillo vs Avanzado)
+function inicializarModoInterfaz() {
+  const modoGuardado = localStorage.getItem('dtk-interface-mode') || 'simple';
+  setModoInterfaz(modoGuardado);
+}
+
+function setModoInterfaz(mode) {
+  localStorage.setItem('dtk-interface-mode', mode);
+  
+  const btnSimple = document.getElementById('btn-mode-simple');
+  const btnAdvanced = document.getElementById('btn-mode-advanced');
+  
+  if (mode === 'simple') {
+    document.body.classList.remove('mode-advanced');
+    document.body.classList.add('mode-simple');
+    if (btnSimple) btnSimple.classList.add('active');
+    if (btnAdvanced) btnAdvanced.classList.remove('active');
+  } else {
+    document.body.classList.remove('mode-simple');
+    document.body.classList.add('mode-advanced');
+    if (btnSimple) btnSimple.classList.remove('active');
+    if (btnAdvanced) btnAdvanced.classList.add('active');
+  }
+  
+  actualizarVisualSelectorSimple();
+}
 
 // Listeners principales
 document.getElementById('btn-iniciar-clicker').addEventListener('click', iniciarClicker);
@@ -785,6 +858,7 @@ document.getElementById('btn-inspect-element').addEventListener('click', comenza
 document.getElementById('clicker-selector').addEventListener('input', () => {
   window.lastTextFilter = '';
   document.getElementById('clicker-preset').value = 'custom';
+  actualizarVisualSelectorSimple();
 });
 
 // Sincronizar visualmente opciones de Ritmo Humano
@@ -815,6 +889,26 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 // Carga Inicial
 refrescarPanel();
+inicializarModoInterfaz();
+
+// Listeners de los botones de modo
+document.getElementById('btn-mode-simple').addEventListener('click', () => setModoInterfaz('simple'));
+document.getElementById('btn-mode-advanced').addEventListener('click', () => setModoInterfaz('advanced'));
+
+// Sincronizar radio de velocidad en modo sencillo
+document.querySelectorAll('input[name="simple-speed"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    const val = e.target.value;
+    const intervalRange = document.getElementById('clicker-interval-range');
+    const intervalNumber = document.getElementById('clicker-interval-number');
+    if (intervalRange) intervalRange.value = val;
+    if (intervalNumber) intervalNumber.value = val;
+    escribirLogTerminal(`⚡ [Modo Sencillo] Velocidad de clics ajustada a: ${val === '500' ? 'Rápido' : val === '3000' ? 'Lento' : 'Seguro'} (${val}ms)`);
+  });
+});
+
+// Listener de Apuntar en Modo Sencillo
+document.getElementById('btn-inspect-simple').addEventListener('click', comenzarSeleccionVisual);
 
 // --- 📁 6. CONTROL DE NAVEGACIÓN POR PESTAÑAS ---
 document.querySelectorAll('.tab-btn').forEach(btn => {

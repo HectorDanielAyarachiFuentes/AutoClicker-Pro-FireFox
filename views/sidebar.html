@@ -23,6 +23,7 @@
   <!-- Navegación de pestañas premium -->
   <nav class="tab-navigation">
     <button id="tab-clicker" class="tab-btn active" data-target="clicker-section">⚡ AutoClicker</button>
+    <button id="tab-terminal" class="tab-btn advanced-only" data-target="terminal-section">💻 Consola</button>
     <button id="tab-guide" class="tab-btn" data-target="guide-section">📖 ¿Cómo Usar?</button>
   </nav>
 
@@ -197,15 +198,21 @@
           <button id="btn-detener-clicker" class="btn-stop" disabled>⏹️ Detener</button>
         </div>
 
-        <!-- Consola Hacker / Terminal Logs -->
-        <div class="terminal-box advanced-only">
+
+
+      </div>
+    </section>
+
+    <!-- PESTAÑA 3: Consola Terminal dedicada -->
+    <section id="terminal-section" class="tab-content">
+      <div class="terminal-container">
+        <div class="terminal-box">
           <div class="terminal-header">
             <span class="terminal-title">💻 Consola de Eventos</span>
             <button id="btn-clear-logs" class="btn-clear-terminal" title="Limpiar Consola">Limpiar</button>
           </div>
           <pre id="terminal-logs" class="terminal-content">Esperando que inicies el clicker...</pre>
         </div>
-
       </div>
     </section>
 

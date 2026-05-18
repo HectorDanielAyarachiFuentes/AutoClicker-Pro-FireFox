@@ -982,3 +982,21 @@ body.mode-advanced .simple-only {
   box-shadow: 0 0 15px var(--success-glow);
   animation: pulse-inspect 1.2s infinite ease-in-out;
 }
+
+/* ==========================================================================
+   🖥️ Consola Terminal Dedicada en Pestaña
+   ========================================================================== */
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 14px;
+  min-height: 0;
+  flex: 1;
+}
+
+#terminal-section .terminal-box {
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+}

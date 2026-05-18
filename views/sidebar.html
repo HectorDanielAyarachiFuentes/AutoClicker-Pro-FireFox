@@ -11,12 +11,21 @@
   
   <!-- Encabezado contextual dinámico -->
   <header class="app-header">
-    <div class="header-main">
-      <span id="favicon-box" class="favicon-icon">🌐</span>
-      <h2 id="titulo-contexto" class="app-title">AutoClicker Pro</h2>
+    <div class="header-left">
+      <div class="header-main">
+        <span id="favicon-box" class="favicon-icon">🌐</span>
+        <h2 id="titulo-contexto" class="app-title">AutoClicker Pro</h2>
+      </div>
+      <div class="header-status">
+        <span id="page-domain" class="page-domain">...</span>
+      </div>
     </div>
-    <div class="header-status">
-      <span id="page-domain" class="page-domain">...</span>
+    
+    <div class="header-right">
+      <div class="action-buttons-group header-actions">
+        <button id="btn-iniciar-clicker" class="btn-start">▶️ Iniciar</button>
+        <button id="btn-detener-clicker" class="btn-stop" disabled>⏹️ Detener</button>
+      </div>
     </div>
   </header>
 
@@ -192,11 +201,7 @@
           </div>
         </div>
 
-        <!-- Botones de Control Principal -->
-        <div class="action-buttons-group">
-          <button id="btn-iniciar-clicker" class="btn-start">▶️ Iniciar Clicker</button>
-          <button id="btn-detener-clicker" class="btn-stop" disabled>⏹️ Detener</button>
-        </div>
+
 
 
 
@@ -219,37 +224,35 @@
     <!-- PESTAÑA 2: Guía de Uso Rápido -->
     <section id="guide-section" class="tab-content">
       <div class="guide-container">
-        <div class="guide-card">
-          <h3>🚀 Guía Rápida: ¡Disparar y Seguir!</h3>
-          <p>Aprende a dominar el <strong>AutoClicker Pro</strong> en cuestión de segundos.</p>
-          
-          <div class="guide-step">
-            <div class="step-badge">1</div>
-            <div class="step-text">
-              <strong>🎯 Apuntar y Capturar:</strong>
-              <p>Haz clic en el botón <strong>"Apuntar"</strong> en la pestaña del clicker, luego mueve el puntero sobre la web y haz clic en el botón que deseas automatizar (ej: el botón de <em>"Follow"</em> en GitHub). ¡El selector se capturará automáticamente!</p>
-            </div>
+        <h3 class="guide-title">🚀 Guía Rápida: ¡Disparar y Seguir!</h3>
+        <p class="guide-subtitle">Aprende a dominar el <strong>AutoClicker Pro</strong> en cuestión de segundos.</p>
+        
+        <div class="guide-step">
+          <div class="step-badge">1</div>
+          <div class="step-text">
+            <strong>🎯 Apuntar y Capturar:</strong>
+            <p>Haz clic en el botón <strong>"Apuntar"</strong> en la pestaña del clicker, luego mueve el puntero sobre la web y haz clic en el botón que deseas automatizar (ej: el botón de <em>"Follow"</em> en GitHub). ¡El selector se capturará automáticamente!</p>
           </div>
+        </div>
 
-          <div class="guide-step">
-            <div class="step-badge">2</div>
-            <div class="step-text">
-              <strong>🤖 Automatización Instantánea:</strong>
-              <p>Una vez capturado el elemento, la extensión configurará la plantilla de forma inteligente e iniciará la secuencia de clics por sí sola. ¡Solo tienes que ver cómo trabaja!</p>
-            </div>
+        <div class="guide-step">
+          <div class="step-badge">2</div>
+          <div class="step-text">
+            <strong>🤖 Automatización Instantánea:</strong>
+            <p>Una vez capturado el elemento, la extensión configurará la plantilla de forma inteligente e iniciará la secuencia de clics por sí sola. ¡Solo tienes que ver cómo trabaja!</p>
           </div>
+        </div>
 
-          <div class="guide-step warning-step">
-            <div class="step-badge">⚠️</div>
-            <div class="step-text">
-              <strong>⚙️ Mantén los Valores Predeterminados:</strong>
-              <p>Para evitar cualquier bloqueo o baneo por parte de las plataformas, te recomendamos fuertemente <strong>mantener los valores que damos configurados por defecto</strong>:</p>
-              <ul>
-                <li><strong>Intervalo Humano (1.5s / 1500ms):</strong> Activa el ritmo aleatorio natural de clic.</li>
-                <li><strong>Estrategia Secuencial:</strong> Simula el recorrido visual de un ojo humano real.</li>
-              </ul>
-              <p class="highlight-quote">¡Es disparar y seguir solamente! Deja que la máquina cuide de tu cuenta y de tus dedos de forma segura. 🦾</p>
-            </div>
+        <div class="guide-step warning-step">
+          <div class="step-badge">⚠️</div>
+          <div class="step-text">
+            <strong>⚙️ Mantén los Valores Predeterminados:</strong>
+            <p>Para evitar cualquier bloqueo o baneo por parte de las plataformas, te recomendamos fuertemente <strong>mantener los valores que damos configurados por defecto</strong>:</p>
+            <ul>
+              <li><strong>Intervalo Humano (1.5s / 1500ms):</strong> Activa el ritmo aleatorio natural de clic.</li>
+              <li><strong>Estrategia Secuencial:</strong> Simula el recorrido visual de un ojo humano real.</li>
+            </ul>
+            <p class="highlight-quote">¡Es disparar y seguir solamente! Deja que la máquina cuide de tu cuenta y de tus dedos de forma segura. 🦾</p>
           </div>
         </div>
       </div>

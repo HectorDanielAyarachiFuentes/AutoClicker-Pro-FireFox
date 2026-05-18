@@ -140,24 +140,31 @@ async function iniciarClicker() {
   const intervaloMs = parseInt(intervalRange.value);
   const estrategia = document.querySelector('input[name="clicker-strategy"]:checked').value;
   const preset = document.getElementById('clicker-preset').value;
-  const textFilter = window.lastTextFilter || '';
+  const textFilter = document.getElementById('clicker-text-filter').value.trim();
   const humanMode = document.getElementById('clicker-human-mode').checked;
   const jitterLevel = document.getElementById('clicker-jitter-level').value;
+  const soundMode = document.getElementById('clicker-sound-mode').checked;
 
   if (!selector) {
     alert("Por favor, introduce un selector CSS válido.");
     return;
   }
 
+  // Restablecer panel de estadísticas a cero para la nueva ejecución
+  document.getElementById('clicks-count').innerText = "0";
+  document.getElementById('speed-average').innerText = "0.00s";
+  document.getElementById('time-saved').innerText = "0.0s";
+
   const logTextFilter = textFilter ? ` (con texto "${textFilter}")` : '';
   const logHuman = humanMode ? `\n🕵️‍♂️ Ritmo Humano: Activado (${jitterLevel === 'low' ? 'Suave' : jitterLevel === 'high' ? 'Caótico' : 'Humano'})` : `\n🕵️‍♂️ Ritmo Humano: Desactivado`;
-  escribirLogTerminal(`🚀 Inicializando clicker en pestaña...\nSelector: "${selector}"${logTextFilter}\nIntervalo: ${intervaloMs}ms\nEstrategia: ${estrategia}${logHuman}`);
+  const logSound = soundMode ? `\n🔊 Sonido Arcade: Activado` : `\n🔊 Sonido Arcade: Desactivado`;
+  escribirLogTerminal(`🚀 Inicializando clicker en pestaña...\nSelector: "${selector}"${logTextFilter}\nIntervalo: ${intervaloMs}ms\nEstrategia: ${estrategia}${logHuman}${logSound}`);
 
   try {
     await browser.scripting.executeScript({
       target: { tabId: tab.id },
-      args: [selector, intervaloMs, estrategia, preset, textFilter, humanMode, jitterLevel],
-      func: (sel, timeMs, strategy, currentPreset, targetTextFilter, isHumanMode, levelJitter) => {
+      args: [selector, intervaloMs, estrategia, preset, textFilter, humanMode, jitterLevel, soundMode],
+      func: (sel, timeMs, strategy, currentPreset, targetTextFilter, isHumanMode, levelJitter, isSoundMode) => {
         // Detener previamente por seguridad
         if (window.devtoolkitClickerInterval) {
           clearInterval(window.devtoolkitClickerInterval);
@@ -178,6 +185,8 @@ async function iniciarClicker() {
           jitterLevel: levelJitter,
           clicksRealizados: 0,
           ultimoClickTime: Date.now(),
+          startTime: Date.now(),
+          soundMode: isSoundMode,
           logs: [`[INICIO] Motor de clics listo.`]
         };
 
@@ -235,7 +244,7 @@ async function iniciarClicker() {
           } else if (targetTextFilter) {
             // Filtrar dinámicamente por texto exacto del elemento apuntado visualmente
             lista = lista.filter(el => {
-              return obtenerTextoElemento(el).toLowerCase() === targetTextFilter.toLowerCase();
+              return obtenerTextoElemento(el).toLowerCase().includes(targetTextFilter.toLowerCase());
             });
           }
           
@@ -331,6 +340,31 @@ async function iniciarClicker() {
                   logMsg += ` (inicio).`;
                 }
                 window.devtoolkitClicker.logs.push(logMsg);
+
+                // Reproducir sonido arcade si está activo
+                if (isSoundMode) {
+                  try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    // Sonido retro "click" de tipo arcade (pitch alto que desciende rápidamente)
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.08);
+                    
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+                    
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.08);
+                  } catch (ae) {
+                    // Ignorar errores de autoplay del navegador
+                  }
+                }
               } catch (e) {
                 window.devtoolkitClicker.logs.push(`[ERROR] Error en clic secuencial #${indice + 1}: ${e.message}`);
               }
@@ -440,6 +474,18 @@ function comenzarPollingEstado(tabId) {
       // Actualizar contador y logs
       document.getElementById('clicks-count').innerText = estado.clicksRealizados;
       escribirLogTerminal(estado.logs.join('\n'));
+
+      // Actualizar estadísticas avanzadas
+      const tiempoAhorrado = estado.clicksRealizados * 1.5; // Estimado de 1.5s ahorrados por click
+      document.getElementById('time-saved').innerText = `${tiempoAhorrado.toFixed(1)}s`;
+
+      if (estado.clicksRealizados > 0 && estado.startTime) {
+        const tiempoTotalMs = Date.now() - estado.startTime;
+        const ritmoMedio = (tiempoTotalMs / 1000) / estado.clicksRealizados;
+        document.getElementById('speed-average').innerText = `${ritmoMedio.toFixed(2)}s`;
+      } else {
+        document.getElementById('speed-average').innerText = "0.00s";
+      }
 
       // Actualizar botones y badge de estado
       const badge = document.getElementById('status-badge');
@@ -685,6 +731,7 @@ browser.runtime.onMessage.addListener((message) => {
     
     document.getElementById('clicker-selector').value = selector;
     window.lastTextFilter = textFilter;
+    document.getElementById('clicker-text-filter').value = textFilter || '';
     
     // Auto-detección inteligente de presets de GitHub
     if (isGitHub) {

@@ -55,6 +55,11 @@
             </div>
             <small class="help-text">Haz clic en <strong>Apuntar</strong>, selecciona un botón en la página web, y el clicker <strong>se iniciará automáticamente</strong> detectando todos los botones similares de la lista.</small>
           </div>
+          <div class="input-group" style="margin-top: 4px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+            <label for="clicker-text-filter">🔍 Filtro de Texto (Opcional)</label>
+            <input type="text" id="clicker-text-filter" placeholder="ej: Seguir, Aceptar, Next">
+            <small class="help-text">Si se especifica, solo hará clic en elementos que contengan este texto (ignorando mayúsculas).</small>
+          </div>
         </div>
 
         <!-- Configuración de Intervalos -->
@@ -109,6 +114,18 @@
           <small class="help-text">Secuencial hace clics con delay uno por uno. Simultáneo hace clic a todos de un golpe.</small>
         </div>
 
+        <!-- Efectos de Sonido -->
+        <div class="control-card">
+          <div class="toggle-row-simple">
+            <span class="card-label-sub">🔊 Efecto de Sonido Arcade</span>
+            <label class="switch">
+              <input type="checkbox" id="clicker-sound-mode">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+          <small class="help-text">Reproduce un sutil sonido sintetizado retro cada vez que el clicker hace un clic real en la página.</small>
+        </div>
+
         <!-- Panel de Estado y Estadísticas -->
         <div class="status-panel">
           <div class="status-item">
@@ -116,8 +133,16 @@
             <span id="status-badge" class="badge-stopped">● DETENIDO</span>
           </div>
           <div class="status-item">
-            <span class="status-label">Clicks Hechos</span>
+            <span class="status-label">Clicks</span>
             <span id="clicks-count" class="stat-value">0</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Ritmo Medio</span>
+            <span id="speed-average" class="stat-value">0.00s</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Ahorrado</span>
+            <span id="time-saved" class="stat-value">0.0s</span>
           </div>
         </div>
 

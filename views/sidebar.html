@@ -181,25 +181,7 @@
           <small class="help-text">Reproduce un sutil sonido sintetizado retro cada vez que el clicker hace un clic real en la página.</small>
         </div>
 
-        <!-- Panel de Estado y Estadísticas -->
-        <div class="status-panel">
-          <div class="status-item">
-            <span class="status-label">Estado</span>
-            <span id="status-badge" class="badge-stopped">● DETENIDO</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Clicks</span>
-            <span id="clicks-count" class="stat-value">0</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Ritmo Medio</span>
-            <span id="speed-average" class="stat-value">0.00s</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Ahorrado</span>
-            <span id="time-saved" class="stat-value">0.0s</span>
-          </div>
-        </div>
+
 
 
 
@@ -211,6 +193,27 @@
     <!-- PESTAÑA 3: Consola Terminal dedicada -->
     <section id="terminal-section" class="tab-content">
       <div class="terminal-container">
+        
+        <!-- Panel de Estado y Estadísticas (Consola) -->
+        <div class="status-panel">
+          <div class="status-item">
+            <span class="status-label">Estado</span>
+            <span id="status-badge-term" class="badge-stopped">● DETENIDO</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Clicks</span>
+            <span id="clicks-count-term" class="stat-value">0</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Ritmo Medio</span>
+            <span id="speed-average-term" class="stat-value">0.00s</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Ahorrado</span>
+            <span id="time-saved-term" class="stat-value">0.0s</span>
+          </div>
+        </div>
+
         <div class="terminal-box">
           <div class="terminal-header">
             <span class="terminal-title">💻 Consola de Eventos</span>

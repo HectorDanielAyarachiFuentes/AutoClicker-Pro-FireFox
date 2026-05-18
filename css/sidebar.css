@@ -1032,7 +1032,8 @@ body.mode-advanced .simple-only {
 #terminal-section .terminal-box {
   min-height: 0;
   max-height: none;
-  height: 100%;
+  flex: 1;
+  height: auto !important;
 }
 
 /* ==========================================================================

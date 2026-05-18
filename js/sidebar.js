@@ -152,10 +152,13 @@ async function iniciarClicker() {
     return;
   }
 
-  // Restablecer panel de estadísticas a cero para la nueva ejecución
-  document.getElementById('clicks-count').innerText = "0";
-  document.getElementById('speed-average').innerText = "0.00s";
-  document.getElementById('time-saved').innerText = "0.0s";
+  // Restablecer panel de estadísticas a cero para la nueva ejecución (Consola)
+  const countTerm = document.getElementById('clicks-count-term');
+  const speedTerm = document.getElementById('speed-average-term');
+  const savedTerm = document.getElementById('time-saved-term');
+  if (countTerm) countTerm.innerText = "0";
+  if (speedTerm) speedTerm.innerText = "0.00s";
+  if (savedTerm) savedTerm.innerText = "0.0s";
 
   const logTextFilter = textFilter ? ` (con texto "${textFilter}")` : '';
   const logHuman = humanMode ? `\n🕵️‍♂️ Ritmo Humano: Activado (${jitterLevel === 'low' ? 'Suave' : jitterLevel === 'high' ? 'Caótico' : 'Humano'})` : `\n🕵️‍♂️ Ritmo Humano: Desactivado`;
@@ -473,10 +476,11 @@ function comenzarPollingEstado(tabId) {
         return;
       }
 
-      const ultimoClicks = parseInt(document.getElementById('clicks-count').innerText) || 0;
+      const countEl = document.getElementById('clicks-count-term');
+      const ultimoClicks = countEl ? (parseInt(countEl.innerText) || 0) : 0;
 
-      // Actualizar contador y logs
-      document.getElementById('clicks-count').innerText = estado.clicksRealizados;
+      // Actualizar contador y logs (Consola)
+      if (countEl) countEl.innerText = estado.clicksRealizados;
       escribirLogTerminal(estado.logs.join('\n'));
 
       // Reproducir sonido arcade si los clics aumentaron y el modo de sonido está activo
@@ -485,26 +489,31 @@ function comenzarPollingEstado(tabId) {
         reproducirSonidoArcadeSidebar();
       }
 
-      // Actualizar estadísticas avanzadas
+      // Actualizar estadísticas avanzadas (Consola)
       const tiempoAhorrado = estado.clicksRealizados * 1.5; // Estimado de 1.5s ahorrados por click
-      document.getElementById('time-saved').innerText = `${tiempoAhorrado.toFixed(1)}s`;
+      const timeSavedTerm = document.getElementById('time-saved-term');
+      if (timeSavedTerm) timeSavedTerm.innerText = `${tiempoAhorrado.toFixed(1)}s`;
 
+      const speedAvgTerm = document.getElementById('speed-average-term');
       if (estado.clicksRealizados > 0 && estado.startTime) {
         const tiempoTotalMs = Date.now() - estado.startTime;
         const ritmoMedio = (tiempoTotalMs / 1000) / estado.clicksRealizados;
-        document.getElementById('speed-average').innerText = `${ritmoMedio.toFixed(2)}s`;
+        if (speedAvgTerm) speedAvgTerm.innerText = `${ritmoMedio.toFixed(2)}s`;
       } else {
-        document.getElementById('speed-average').innerText = "0.00s";
+        if (speedAvgTerm) speedAvgTerm.innerText = "0.00s";
       }
 
       // Actualizar botones y badge de estado
-      const badge = document.getElementById('status-badge');
+      const badgeTerm = document.getElementById('status-badge-term');
       const btnStart = document.getElementById('btn-iniciar-clicker');
       const btnStop = document.getElementById('btn-detener-clicker');
 
       if (estado.activo) {
-        badge.innerText = "● EJECUTANDO";
-        badge.className = "badge-running";
+        if (badgeTerm) {
+          badgeTerm.innerText = "● EJECUTANDO";
+          badgeTerm.className = "badge-running";
+        }
+        
         btnStart.disabled = true;
         btnStop.disabled = false;
         
@@ -525,12 +534,15 @@ function comenzarPollingEstado(tabId) {
 }
 
 function actualizarUIParado() {
-  const badge = document.getElementById('status-badge');
+  const badgeTerm = document.getElementById('status-badge-term');
   const btnStart = document.getElementById('btn-iniciar-clicker');
   const btnStop = document.getElementById('btn-detener-clicker');
 
-  badge.innerText = "● DETENIDO";
-  badge.className = "badge-stopped";
+  if (badgeTerm) {
+    badgeTerm.innerText = "● DETENIDO";
+    badgeTerm.className = "badge-stopped";
+  }
+
   btnStart.disabled = false;
   btnStop.disabled = true;
 

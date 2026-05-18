@@ -471,9 +471,17 @@ function comenzarPollingEstado(tabId) {
         return;
       }
 
+      const ultimoClicks = parseInt(document.getElementById('clicks-count').innerText) || 0;
+
       // Actualizar contador y logs
       document.getElementById('clicks-count').innerText = estado.clicksRealizados;
       escribirLogTerminal(estado.logs.join('\n'));
+
+      // Reproducir sonido arcade si los clics aumentaron y el modo de sonido está activo
+      const soundMode = document.getElementById('clicker-sound-mode').checked;
+      if (soundMode && estado.clicksRealizados > ultimoClicks) {
+        reproducirSonidoArcadeSidebar();
+      }
 
       // Actualizar estadísticas avanzadas
       const tiempoAhorrado = estado.clicksRealizados * 1.5; // Estimado de 1.5s ahorrados por click
@@ -823,3 +831,32 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.getElementById(targetId).classList.add('active');
   });
 });
+
+// --- 🔊 7. EFECTOS DE SONIDO SINTETIZADOS EN SIDEBAR ---
+function reproducirSonidoArcadeSidebar() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    // Sonido retro "click" de tipo arcade (pitch agudo que desciende rápidamente)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(850, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.08);
+    
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+    
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.08);
+  } catch (ae) {
+    console.error("Error al reproducir audio:", ae);
+  }
+}

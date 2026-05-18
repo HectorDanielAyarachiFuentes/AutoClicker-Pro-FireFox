@@ -835,13 +835,39 @@ function actualizarVisualSelectorSimple() {
     if (titleEl) titleEl.textContent = "¡Elemento Listo!";
     if (descEl) {
       const label = textFilter ? `Texto "${textFilter}"` : `Selector CSS "${selector}"`;
-      descEl.innerHTML = `Detectado: <strong style="color: var(--success-color);">${label}</strong>.<br><small style="color: var(--text-secondary);">El clicker comenzará automáticamente a pulsar este botón.</small>`;
+      // Construir nodos de forma 100% segura para evitar innerHTML (Rechazo de Firefox Add-ons)
+      descEl.textContent = "";
+      
+      descEl.appendChild(document.createTextNode("Detectado: "));
+      
+      const strongEl = document.createElement('strong');
+      strongEl.style.color = "var(--success-color)";
+      strongEl.textContent = label;
+      descEl.appendChild(strongEl);
+      
+      descEl.appendChild(document.createTextNode("."));
+      descEl.appendChild(document.createElement('br'));
+      
+      const smallEl = document.createElement('small');
+      smallEl.style.color = "var(--text-secondary)";
+      smallEl.textContent = "El clicker comenzará automáticamente a pulsar este botón.";
+      descEl.appendChild(smallEl);
     }
     if (simpleTargetBox) simpleTargetBox.classList.add('has-target');
   } else {
     if (iconEl) iconEl.textContent = "✨";
     if (titleEl) titleEl.textContent = "¿Qué quieres clickear?";
-    if (descEl) descEl.innerHTML = `Haz clic en <strong>"Apuntar Elemento"</strong> y toca el botón que quieras automatizar en la web.`;
+    if (descEl) {
+      // Reconstruir de forma 100% segura para evitar innerHTML
+      descEl.textContent = "";
+      descEl.appendChild(document.createTextNode("Haz clic en "));
+      
+      const strongEl = document.createElement('strong');
+      strongEl.textContent = '"Apuntar Elemento"';
+      descEl.appendChild(strongEl);
+      
+      descEl.appendChild(document.createTextNode(" y toca el botón que quieras automatizar en la web."));
+    }
     if (simpleTargetBox) simpleTargetBox.classList.remove('has-target');
   }
 }

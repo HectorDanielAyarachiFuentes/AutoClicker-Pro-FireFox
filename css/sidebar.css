@@ -563,6 +563,7 @@ input:checked + .slider-toggle:before {
   min-height: 220px;
   max-height: 380px;
   flex: 1;
+  position: relative;
 }
 
 .terminal-header {
@@ -999,4 +1000,108 @@ body.mode-advanced .simple-only {
   min-height: 0;
   max-height: none;
   height: 100%;
+}
+
+/* ==========================================================================
+   ⚡ Animación de Borde Láser Giratorio (Consola en Ejecución)
+   ========================================================================== */
+.terminal-box.working {
+  border-color: transparent !important;
+  box-shadow: 0 0 20px rgba(57, 211, 83, 0.15) !important;
+}
+
+.terminal-box.working::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 40%,
+    var(--success-color) 45%,
+    #00f2fe 50%,
+    var(--success-color) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  animation: rotate-border 3s linear infinite;
+  z-index: 1;
+}
+
+.terminal-box.working::after {
+  content: '';
+  position: absolute;
+  inset: 2px; /* 2px de grosor para que el rayo láser sea bien visible */
+  background: #020306;
+  border-radius: calc(var(--card-radius) - 2px);
+  z-index: 2;
+}
+
+/* Asegurar que el contenido permanezca por encima de la máscara y la animación */
+.terminal-box.working > * {
+  position: relative;
+  z-index: 3;
+}
+
+/* ==========================================================================
+   🔔 Pestaña de Consola en Ejecución (Glow y Contorno Láser Giratorio)
+   ========================================================================== */
+.tab-btn#tab-terminal.working {
+  position: relative;
+  z-index: 1;
+  color: #39d353 !important;
+  text-shadow: 0 0 10px rgba(57, 211, 83, 0.6);
+  animation: pulse-tab-active 1.5s infinite ease-in-out;
+}
+
+/* Contorno láser animado alrededor del botón de pestaña */
+.tab-btn#tab-terminal.working::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1.5px solid transparent;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #39d353, #00f2fe, #39d353) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  background-size: 200% auto;
+  animation: rotate-gradient 2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate-border {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-tab-active {
+  0% {
+    box-shadow: inset 0 0 4px rgba(57, 211, 83, 0.1);
+  }
+  50% {
+    box-shadow: inset 0 0 10px rgba(57, 211, 83, 0.25);
+  }
+  100% {
+    box-shadow: inset 0 0 4px rgba(57, 211, 83, 0.1);
+  }
 }

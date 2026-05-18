@@ -507,6 +507,11 @@ function comenzarPollingEstado(tabId) {
         badge.className = "badge-running";
         btnStart.disabled = true;
         btnStop.disabled = false;
+        
+        // Activar animación en la consola y la pestaña
+        document.querySelectorAll('.terminal-box').forEach(term => term.classList.add('working'));
+        const tabTerm = document.getElementById('tab-terminal');
+        if (tabTerm) tabTerm.classList.add('working');
       } else {
         actualizarUIParado();
       }
@@ -528,6 +533,11 @@ function actualizarUIParado() {
   badge.className = "badge-stopped";
   btnStart.disabled = false;
   btnStop.disabled = true;
+
+  // Desactivar animación en la consola y la pestaña
+  document.querySelectorAll('.terminal-box').forEach(term => term.classList.remove('working'));
+  const tabTerm = document.getElementById('tab-terminal');
+  if (tabTerm) tabTerm.classList.remove('working');
 
   if (pollingIntervalId) {
     clearInterval(pollingIntervalId);

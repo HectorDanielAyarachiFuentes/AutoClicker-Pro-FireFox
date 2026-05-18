@@ -72,6 +72,25 @@
             <button class="btn-time-shortcut" data-ms="1500">Humano (1.5s)</button>
             <button class="btn-time-shortcut" data-ms="3000">Seguro (3.0s)</button>
           </div>
+
+          <div class="toggle-row">
+            <span class="card-label-sub">🕵️‍♂️ Ritmo Humano Variable (Jitter)</span>
+            <label class="switch">
+              <input type="checkbox" id="clicker-human-mode" checked>
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+          <div id="human-mode-options" class="human-options-row">
+            <small class="help-text">Añade micro-variaciones de tiempo aleatorias y pausas inteligentes de seguridad cada 10 clics para despistar sistemas anti-bots.</small>
+            <div class="jitter-selector-container">
+              <label for="clicker-jitter-level" class="card-label-sub-lite">Variación: </label>
+              <select id="clicker-jitter-level">
+                <option value="low">Suave (±15%)</option>
+                <option value="medium" selected>Humano (±30%)</option>
+                <option value="high">Caótico / Extremo (±50%)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- Estrategia de Clics -->

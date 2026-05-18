@@ -141,6 +141,8 @@ async function iniciarClicker() {
   const estrategia = document.querySelector('input[name="clicker-strategy"]:checked').value;
   const preset = document.getElementById('clicker-preset').value;
   const textFilter = window.lastTextFilter || '';
+  const humanMode = document.getElementById('clicker-human-mode').checked;
+  const jitterLevel = document.getElementById('clicker-jitter-level').value;
 
   if (!selector) {
     alert("Por favor, introduce un selector CSS válido.");
@@ -148,13 +150,14 @@ async function iniciarClicker() {
   }
 
   const logTextFilter = textFilter ? ` (con texto "${textFilter}")` : '';
-  escribirLogTerminal(`🚀 Inicializando clicker en pestaña...\nSelector: "${selector}"${logTextFilter}\nIntervalo: ${intervaloMs}ms\nEstrategia: ${estrategia}`);
+  const logHuman = humanMode ? `\n🕵️‍♂️ Ritmo Humano: Activado (${jitterLevel === 'low' ? 'Suave' : jitterLevel === 'high' ? 'Caótico' : 'Humano'})` : `\n🕵️‍♂️ Ritmo Humano: Desactivado`;
+  escribirLogTerminal(`🚀 Inicializando clicker en pestaña...\nSelector: "${selector}"${logTextFilter}\nIntervalo: ${intervaloMs}ms\nEstrategia: ${estrategia}${logHuman}`);
 
   try {
     await browser.scripting.executeScript({
       target: { tabId: tab.id },
-      args: [selector, intervaloMs, estrategia, preset, textFilter],
-      func: (sel, timeMs, strategy, currentPreset, targetTextFilter) => {
+      args: [selector, intervaloMs, estrategia, preset, textFilter, humanMode, jitterLevel],
+      func: (sel, timeMs, strategy, currentPreset, targetTextFilter, isHumanMode, levelJitter) => {
         // Detener previamente por seguridad
         if (window.devtoolkitClickerInterval) {
           clearInterval(window.devtoolkitClickerInterval);
@@ -171,7 +174,10 @@ async function iniciarClicker() {
           estrategia: strategy,
           preset: currentPreset,
           textFilter: targetTextFilter,
+          humanMode: isHumanMode,
+          jitterLevel: levelJitter,
           clicksRealizados: 0,
+          ultimoClickTime: Date.now(),
           logs: [`[INICIO] Motor de clics listo.`]
         };
 
@@ -312,21 +318,49 @@ async function iniciarClicker() {
                 botonActual.style.outline = "2px dashed #39d353";
                 botonActual.style.outlineOffset = "2px";
                 
+                const ahora = Date.now();
+                const tiempoTranscurrido = window.devtoolkitClicker.ultimoClickTime ? (ahora - window.devtoolkitClicker.ultimoClickTime) : 0;
+                window.devtoolkitClicker.ultimoClickTime = ahora;
+                
                 window.devtoolkitClicker.clicksRealizados++;
-                window.devtoolkitClicker.logs.push(`[CLICK] Clic secuencial #${window.devtoolkitClicker.clicksRealizados}/${listadoBotones.length} realizado.`);
+                
+                let logMsg = `[CLICK] Clic secuencial #${window.devtoolkitClicker.clicksRealizados}/${listadoBotones.length} realizado`;
+                if (tiempoTranscurrido > 0) {
+                  logMsg += ` (retraso real: ${(tiempoTranscurrido / 1000).toFixed(2)}s).`;
+                } else {
+                  logMsg += ` (inicio).`;
+                }
+                window.devtoolkitClicker.logs.push(logMsg);
               } catch (e) {
                 window.devtoolkitClicker.logs.push(`[ERROR] Error en clic secuencial #${indice + 1}: ${e.message}`);
               }
 
-              // Calcular un retraso con jitter aleatorio para parecer 100% humano (variación entre -15% y +25% del tiempo base)
-              const variacion = (Math.random() * 0.4 - 0.15) * timeMs;
-              delayActual = Math.max(200, Math.round(timeMs + variacion));
+              if (isHumanMode) {
+                // Rango de variación según el nivel
+                let minPercent = -0.10; // -10% por defecto (mínimo tiempo de reacción)
+                let maxPercent = 0.30;  // +30% por defecto (ligeros retrasos de atención)
 
-              // Pausa inteligente cada 10 clics (simula descanso humano de lectura)
-              if (window.devtoolkitClicker.clicksRealizados > 0 && window.devtoolkitClicker.clicksRealizados % 10 === 0) {
-                const pausaExtra = 4000 + Math.random() * 3000; // Entre 4 y 7 segundos adicionales
-                delayActual += pausaExtra;
-                window.devtoolkitClicker.logs.push(`[HUMANO] Pausa preventiva de seguridad: ${(pausaExtra / 1000).toFixed(1)}s de respiro...`);
+                if (levelJitter === 'low') {
+                  minPercent = -0.05;
+                  maxPercent = 0.15;
+                } else if (levelJitter === 'high') {
+                  minPercent = -0.15;
+                  maxPercent = 0.50;
+                }
+
+                // Calcular factor aleatorio en el rango [minPercent, maxPercent]
+                const factorAleatorio = minPercent + Math.random() * (maxPercent - minPercent);
+                delayActual = Math.round(timeMs * (1 + factorAleatorio));
+
+                // Asegurar un mínimo absoluto de 150ms para no disparar alertas
+                delayActual = Math.max(150, delayActual);
+
+                // Pausa inteligente cada 10 clics (simula descanso humano de lectura)
+                if (window.devtoolkitClicker.clicksRealizados > 0 && window.devtoolkitClicker.clicksRealizados % 10 === 0) {
+                  const pausaExtra = 3000 + Math.random() * 4000; // Entre 3 y 7 segundos adicionales
+                  delayActual += pausaExtra;
+                  window.devtoolkitClicker.logs.push(`[HUMANO] Pausa preventiva de seguridad: ${(pausaExtra / 1000).toFixed(1)}s de respiro...`);
+                }
               }
             } else {
               window.devtoolkitClicker.logs.push(`[OMITIDO] Fila #${indice + 1} ya procesada.`);
@@ -697,6 +731,20 @@ document.getElementById('clicker-selector').addEventListener('input', () => {
   window.lastTextFilter = '';
   document.getElementById('clicker-preset').value = 'custom';
 });
+
+// Sincronizar visualmente opciones de Ritmo Humano
+const humanModeCheckbox = document.getElementById('clicker-human-mode');
+const humanModeOptions = document.getElementById('human-mode-options');
+
+if (humanModeCheckbox && humanModeOptions) {
+  humanModeCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      humanModeOptions.style.display = 'flex';
+    } else {
+      humanModeOptions.style.display = 'none';
+    }
+  });
+}
 
 // Recargas al cambiar de pestaña activa o cambiar URL
 browser.tabs.onActivated.addListener(() => {

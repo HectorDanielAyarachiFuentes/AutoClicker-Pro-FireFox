@@ -650,6 +650,85 @@ input:checked + .slider-toggle:before {
   text-align: left;
 }
 
+/* --- ESTILOS PREMIUM PARA LA CONSOLA INTELIGENTE (COLOR-CODED) --- */
+.log-line {
+  margin-bottom: 5px;
+  line-height: 1.5;
+  border-left: 2px solid transparent;
+  padding-left: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media(min-width: 250px) {
+  .log-line {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.log-prefix {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.log-msg {
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  word-break: break-word;
+}
+
+/* Colores y bordes según el tipo de evento */
+.log-type-inicio { border-left-color: #39d353; }
+.log-type-inicio .log-prefix { background: rgba(57, 211, 83, 0.15); color: #39d353; }
+
+.log-type-sitio { border-left-color: #00d2ff; }
+.log-type-sitio .log-prefix { background: rgba(0, 210, 255, 0.15); color: #00d2ff; }
+
+.log-type-click { border-left-color: #a6e22e; }
+.log-type-click .log-prefix { background: rgba(166, 226, 46, 0.15); color: #a6e22e; }
+
+.log-type-sistema { border-left-color: #bd93f9; }
+.log-type-sistema .log-prefix { background: rgba(189, 147, 249, 0.15); color: #bd93f9; }
+
+.log-type-instagram { border-left-color: #e1306c; }
+.log-type-instagram .log-prefix { background: rgba(225, 48, 108, 0.15); color: #e1306c; }
+
+.log-type-omitido { border-left-color: #6272a4; border-left-style: dashed; }
+.log-type-omitido .log-prefix { background: rgba(98, 114, 164, 0.15); color: #6272a4; }
+.log-type-omitido .log-msg { color: #6272a4; }
+
+.log-type-humano { border-left-color: #ffb86c; }
+.log-type-humano .log-prefix { background: rgba(255, 184, 108, 0.15); color: #ffb86c; }
+
+.log-type-error { border-left-color: #ff5555; }
+.log-type-error .log-prefix { background: rgba(255, 85, 85, 0.15); color: #ff5555; }
+.log-type-error .log-msg { color: #ff5555; }
+
+.log-type-aviso { border-left-color: #ffb86c; }
+.log-type-aviso .log-prefix { background: rgba(255, 184, 108, 0.15); color: #ffb86c; }
+
+.log-type-fin { border-left-color: #50fa7b; }
+.log-type-fin .log-prefix { background: rgba(80, 250, 123, 0.2); color: #50fa7b; }
+.log-type-fin .log-msg { font-weight: bold; color: #50fa7b; }
+
+.log-type-info { border-left-color: #8be9fd; }
+.log-type-info .log-prefix { background: rgba(139, 233, 253, 0.15); color: #8be9fd; }
+
+.log-type-default { border-left-color: #a6e22e; }
+.log-type-default .log-msg { color: #a6e22e; }
+
+
 /* ==========================================================================
    🎯 Selector Visual de Elementos
    ========================================================================== */

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AutoClicker Pro",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Auto-Clicker premium y seguro para automatizar clics en cualquier página web.",
   "permissions": [
     "activeTab",

@@ -84,6 +84,18 @@
             </div>
             <small class="help-text">El modo <strong>Seguro</strong> incluye pausas humanas preventivas para evitar bloqueos.</small>
           </div>
+
+          <!-- Card Especial para Instagram -->
+          <div class="control-card special-instagram-card">
+            <div class="toggle-row-simple">
+              <span class="card-label-sub">📸 Auto-confirmar Dejar de Seguir (Instagram)</span>
+              <label class="switch">
+                <input type="checkbox" id="clicker-instagram-unfollow-simple">
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+            <small class="help-text">Si se activa, el autoclicker confirmará automáticamente la ventana emergente de Instagram al pulsar "Siguiendo" para dejar de seguir al usuario.</small>
+          </div>
         </div>
 
         <!-- CONTROLES MODO AVANZADO -->
@@ -96,6 +108,7 @@
               <option value="custom">⚙️ Personalizado (Escribe tu selector)</option>
               <option value="github-follow-preset">👥 GitHub: Auto-Follow (Seguir todos)</option>
               <option value="github-unfollow-preset">🚫 GitHub: Auto-Unfollow (Dejar de seguir)</option>
+              <option value="instagram-unfollow-preset">📸 Instagram: Auto-Unfollow (Dejar de seguir)</option>
               <option value="next-button">➡️ Formulario: Botón Siguiente / Continuar</option>
             </select>
           </div>
@@ -180,6 +193,18 @@
             </label>
           </div>
           <small class="help-text">Reproduce un sutil sonido sintetizado retro cada vez que el clicker hace un clic real en la página.</small>
+        </div>
+
+        <!-- Opción para Instagram (Auto-confirmar Dejar de Seguir) -->
+        <div class="control-card advanced-only">
+          <div class="toggle-row-simple">
+            <span class="card-label-sub">📸 Auto-confirmar Dejar de Seguir (Instagram)</span>
+            <label class="switch">
+              <input type="checkbox" id="clicker-instagram-unfollow-advanced">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+          <small class="help-text">Si está activo, hace clic automáticamente en el botón "Dejar de seguir" en el modal de confirmación de Instagram.</small>
         </div>
 
 

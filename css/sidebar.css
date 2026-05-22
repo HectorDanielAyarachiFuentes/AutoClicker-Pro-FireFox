@@ -1432,3 +1432,11 @@ body.mode-advanced .simple-only {
   box-shadow: 0 0 22px rgba(0, 242, 254, 0.5);
   transform: scale(1.06);
 }
+/* Quick Actions */
+.simple-quick-actions { margin-bottom: 12px; }
+.quick-action-buttons { display: flex; gap: 8px; margin-top: 8px; }
+.quick-action-buttons .btn-action { flex: 1; padding: 10px; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.2s; color: white; display: flex; justify-content: center; align-items: center; gap: 5px; }
+.quick-action-buttons .btn-follow { background: var(--primary); border: 1px solid rgba(255,255,255,0.1); }
+.quick-action-buttons .btn-follow:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.quick-action-buttons .btn-unfollow { background: rgba(255, 60, 60, 0.15); border: 1px solid rgba(255, 60, 60, 0.3); color: #ff6b6b; }
+.quick-action-buttons .btn-unfollow:hover { background: rgba(255, 60, 60, 0.25); transform: translateY(-1px); }

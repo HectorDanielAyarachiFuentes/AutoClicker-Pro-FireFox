@@ -7,29 +7,105 @@ async function refrescarPanel() {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
-  // 1. Mostrar favicon
-  const faviconBox = document.getElementById('favicon-box');
-  faviconBox.textContent = "";
-  if (tab.favIconUrl && tab.favIconUrl.startsWith('http')) {
-    const img = document.createElement('img');
-    img.src = tab.favIconUrl;
-    img.alt = "Icon";
-    faviconBox.appendChild(img);
-  } else {
-    faviconBox.textContent = "🌐";
+  // 1. Nombres y logos predefinidos para las plataformas principales
+  let nombrePlataforma = "AutoClicker Pro";
+  let urlIcono = tab.favIconUrl;
+  const url = tab.url || "";
+
+  if (url.includes('instagram.com')) {
+    nombrePlataforma = "Instagram";
+  } else if (url.includes('tiktok.com')) {
+    nombrePlataforma = "TikTok";
+  } else if (url.includes('facebook.com')) {
+    nombrePlataforma = "Facebook";
+  } else if (url.includes('github.com')) {
+    nombrePlataforma = "GitHub";
   }
 
-  // 2. Título de contexto
-  const tituloContexto = document.getElementById('titulo-contexto');
-  tituloContexto.innerText = "AutoClicker Pro";
+  // 2. Mostrar favicon
+  const faviconBox = document.getElementById('favicon-box');
+  faviconBox.textContent = "";
+  
+  const mostrarEmojiFallback = () => {
+    faviconBox.innerHTML = "";
+    if (url.includes('instagram.com')) faviconBox.textContent = "📸";
+    else if (url.includes('tiktok.com')) faviconBox.textContent = "🎵";
+    else if (url.includes('facebook.com')) faviconBox.textContent = "📘";
+    else if (url.includes('github.com')) faviconBox.textContent = "🐙";
+    else faviconBox.textContent = "🌐";
+  };
 
-  // 3. Dominio secundario
+  if (urlIcono && (urlIcono.startsWith('http') || urlIcono.startsWith('data:'))) {
+    const img = document.createElement('img');
+    img.src = urlIcono;
+    img.alt = "Favicon";
+    img.style.width = "18px";
+    img.style.height = "18px";
+    img.style.borderRadius = "4px";
+    img.style.verticalAlign = "middle";
+    img.onerror = mostrarEmojiFallback;
+    faviconBox.appendChild(img);
+  } else {
+    mostrarEmojiFallback();
+  }
+
+  // 3. Título de contexto
+  const tituloContexto = document.getElementById('titulo-contexto');
+  tituloContexto.innerText = nombrePlataforma;
+
+  // 4. Dominio secundario
   const pageDomain = document.getElementById('page-domain');
   try {
     const urlObj = new URL(tab.url);
     pageDomain.innerText = urlObj.hostname;
   } catch (e) {
     pageDomain.innerText = "Página local / Sistema";
+  }
+
+  // 5. Mostrar/Ocultar y configurar Acciones Rápidas (Modo Sencillo)
+  const quickActionsCard = document.getElementById('simple-quick-actions');
+  const quickPlatformText = document.getElementById('quick-action-platform');
+  const btnFollow = document.getElementById('btn-quick-follow');
+  const btnUnfollow = document.getElementById('btn-quick-unfollow');
+
+  if (quickActionsCard) {
+    if (url.includes('instagram.com') || url.includes('tiktok.com') || url.includes('facebook.com') || url.includes('github.com')) {
+      quickActionsCard.style.display = '';
+      if (quickPlatformText) quickPlatformText.innerText = nombrePlataforma;
+      
+      // Ajustar texto en FB
+      if (url.includes('facebook.com')) {
+        btnFollow.innerHTML = "👥 Auto-Agregar";
+      } else {
+        btnFollow.innerHTML = "👥 Auto-Seguir";
+      }
+
+      btnFollow.onclick = () => {
+        let presetId = '';
+        if (url.includes('instagram.com')) presetId = 'instagram-follow-preset';
+        if (url.includes('tiktok.com')) presetId = 'tiktok-follow-preset';
+        if (url.includes('facebook.com')) presetId = 'facebook-add-friend-preset';
+        if (url.includes('github.com')) presetId = 'github-follow-preset';
+        
+        document.getElementById('clicker-preset').value = presetId;
+        aplicarPresetSeleccionado();
+        document.getElementById('btn-iniciar-clicker').click();
+      };
+
+      btnUnfollow.onclick = () => {
+        let presetId = '';
+        if (url.includes('instagram.com')) presetId = 'instagram-unfollow-preset';
+        if (url.includes('tiktok.com')) presetId = 'tiktok-unfollow-preset';
+        if (url.includes('facebook.com')) presetId = 'facebook-unfollow-preset';
+        if (url.includes('github.com')) presetId = 'github-unfollow-preset';
+        
+        document.getElementById('clicker-preset').value = presetId;
+        aplicarPresetSeleccionado();
+        document.getElementById('btn-iniciar-clicker').click();
+      };
+    } else {
+      quickActionsCard.style.display = 'none';
+    }
   }
 
   // 4. Cargar presets inteligentes dependiendo de la url

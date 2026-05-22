@@ -200,6 +200,20 @@ async function iniciarClicker() {
                    estilo.display !== 'none' && 
                    estilo.visibility !== 'hidden';
           });
+
+          // Priorizar elementos dentro de ventanas emergentes / modales si hay alguna abierta
+          const modales = Array.from(document.querySelectorAll('[role="dialog"], [aria-modal="true"]')).filter(m => {
+            const r = m.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && window.getComputedStyle(m).display !== 'none' && window.getComputedStyle(m).visibility !== 'hidden';
+          });
+
+          if (modales.length > 0) {
+            const elementosEnModal = lista.filter(el => modales.some(m => m.contains(el)));
+            // Si el modal contiene los botones que buscamos, nos enfocamos 100% en el modal y descartamos el fondo
+            if (elementosEnModal.length > 0) {
+              lista = elementosEnModal;
+            }
+          }
           
           // Salvaguarda Universal Avanzada:
           // Si el preset actual NO es explícitamente para dejar de seguir (unfollow) ni cancelar

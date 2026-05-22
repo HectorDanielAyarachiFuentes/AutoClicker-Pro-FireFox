@@ -85,16 +85,16 @@
             <small class="help-text">El modo <strong>Seguro</strong> incluye pausas humanas preventivas para evitar bloqueos.</small>
           </div>
 
-          <!-- Card Especial para Instagram -->
-          <div class="control-card special-instagram-card">
+          <!-- Card Especial para Modales (Instagram/Facebook) -->
+          <div class="control-card special-modal-card">
             <div class="toggle-row-simple">
-              <span class="card-label-sub">📸 Auto-confirmar Dejar de Seguir (Instagram)</span>
+              <span class="card-label-sub">🤖 Auto-confirmar Ventanas (Insta/Facebook)</span>
               <label class="switch">
                 <input type="checkbox" id="clicker-instagram-unfollow-simple">
                 <span class="slider-toggle"></span>
               </label>
             </div>
-            <small class="help-text">Si se activa, el autoclicker confirmará automáticamente la ventana emergente de Instagram al pulsar "Siguiendo" para dejar de seguir al usuario.</small>
+            <small class="help-text">Si se activa, el autoclicker confirmará automáticamente la ventana emergente al pulsar "Siguiendo" para dejar de seguir al usuario.</small>
           </div>
         </div>
 
@@ -108,7 +108,14 @@
               <option value="custom">⚙️ Personalizado (Escribe tu selector)</option>
               <option value="github-follow-preset">👥 GitHub: Auto-Follow (Seguir todos)</option>
               <option value="github-unfollow-preset">🚫 GitHub: Auto-Unfollow (Dejar de seguir)</option>
+              <option value="instagram-follow-preset">📸 Instagram: Auto-Follow (Seguir)</option>
               <option value="instagram-unfollow-preset">📸 Instagram: Auto-Unfollow (Dejar de seguir)</option>
+              <option value="tiktok-follow-preset">🎵 TikTok: Auto-Follow (Seguir)</option>
+              <option value="tiktok-unfollow-preset">🎵 TikTok: Auto-Unfollow (Dejar de seguir)</option>
+              <option value="facebook-add-friend-preset">📘 Facebook: Agregar a amigos</option>
+              <option value="facebook-cancel-request-preset">📘 Facebook: Cancelar solicitud</option>
+              <option value="facebook-follow-preset">📘 Facebook: Seguir</option>
+              <option value="facebook-unfollow-preset">📘 Facebook: Dejar de seguir</option>
               <option value="next-button">➡️ Formulario: Botón Siguiente / Continuar</option>
             </select>
           </div>
@@ -195,16 +202,16 @@
           <small class="help-text">Reproduce un sutil sonido sintetizado retro cada vez que el clicker hace un clic real en la página.</small>
         </div>
 
-        <!-- Opción para Instagram (Auto-confirmar Dejar de Seguir) -->
+        <!-- Opción para Instagram/Facebook (Auto-confirmar) -->
         <div class="control-card advanced-only">
           <div class="toggle-row-simple">
-            <span class="card-label-sub">📸 Auto-confirmar Dejar de Seguir (Instagram)</span>
+            <span class="card-label-sub">🤖 Auto-confirmar Ventanas (Insta/Facebook)</span>
             <label class="switch">
               <input type="checkbox" id="clicker-instagram-unfollow-advanced">
               <span class="slider-toggle"></span>
             </label>
           </div>
-          <small class="help-text">Si está activo, hace clic automáticamente en el botón "Dejar de seguir" en el modal de confirmación de Instagram.</small>
+          <small class="help-text">Si está activo, hace clic automáticamente en el botón de confirmación ("Dejar de seguir") en las ventanas flotantes.</small>
         </div>
 
 
@@ -332,6 +339,10 @@
 
   </main>
 
+  <script src="../js/utils.js"></script>
+  <script src="../js/terminal.js"></script>
+  <script src="../js/clicker-engine.js"></script>
+  <script src="../js/visual-inspector.js"></script>
   <script src="../js/sidebar.js"></script>
 </body>
 </html>

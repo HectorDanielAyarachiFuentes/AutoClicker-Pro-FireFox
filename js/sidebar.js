@@ -1,8 +1,6 @@
 // ==========================================================================
-// 🚀 AUTOCLICKER PRO - PRINCIPAL CONTROLLER
+// 🚀 AUTOCLICKER PRO - CONTROLADOR PRINCIPAL Y ENTRADA (sidebar.js)
 // ==========================================================================
-
-let pollingIntervalId = null;
 
 // --- ⚙️ 1. REFRESCO Y PANEL DEL CONTEXTO (FAVICONS Y DOMINIO) ---
 async function refrescarPanel() {
@@ -42,23 +40,29 @@ async function refrescarPanel() {
   // 5. Iniciar polling del clicker por si hay una tarea en progreso en esta pestaña
   comenzarPollingEstado(tab.id);
 
-  // 6. Mostrar/ocultar opciones de Instagram inteligentemente según la pestaña activa
-  const esInsta = tab.url && tab.url.includes('instagram.com');
-  const cardInstaSimple = document.querySelector('.special-instagram-card');
+  // 6. Mostrar/ocultar opciones de confirmación inteligentemente según la pestaña activa
+  const esInstaOFacebook = tab.url && (tab.url.includes('instagram.com') || tab.url.includes('facebook.com'));
+  const cardModalSimple = document.querySelector('.special-modal-card');
   const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
-  const cardInstaAdvanced = chkAdv ? chkAdv.closest('.control-card') : null;
+  const cardModalAdvanced = chkAdv ? chkAdv.closest('.control-card') : null;
   const presetInstagramOption = document.querySelector('#clicker-preset option[value="instagram-unfollow-preset"]');
+  const presetInstagramFollowOption = document.querySelector('#clicker-preset option[value="instagram-follow-preset"]');
+  const presetFacebookOption = document.querySelector('#clicker-preset option[value="facebook-unfollow-preset"]');
 
-  if (esInsta) {
-    if (cardInstaSimple) cardInstaSimple.style.display = '';
-    if (cardInstaAdvanced) cardInstaAdvanced.style.display = '';
-    if (presetInstagramOption) presetInstagramOption.style.display = '';
+  if (esInstaOFacebook) {
+    if (cardModalSimple) cardModalSimple.style.display = '';
+    if (cardModalAdvanced) cardModalAdvanced.style.display = '';
+    if (tab.url.includes('instagram.com') && presetInstagramOption) presetInstagramOption.style.display = '';
+    if (tab.url.includes('instagram.com') && presetInstagramFollowOption) presetInstagramFollowOption.style.display = '';
+    if (tab.url.includes('facebook.com') && presetFacebookOption) presetFacebookOption.style.display = '';
   } else {
-    if (cardInstaSimple) cardInstaSimple.style.display = 'none';
-    if (cardInstaAdvanced) cardInstaAdvanced.style.display = 'none';
+    if (cardModalSimple) cardModalSimple.style.display = 'none';
+    if (cardModalAdvanced) cardModalAdvanced.style.display = 'none';
     if (presetInstagramOption) presetInstagramOption.style.display = 'none';
+    if (presetInstagramFollowOption) presetInstagramFollowOption.style.display = 'none';
+    if (presetFacebookOption) presetFacebookOption.style.display = 'none';
     
-    // Desmarcar checkboxes si no estamos en Instagram
+    // Desmarcar checkboxes si no estamos en una red que los use
     const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
     if (chkSimple) chkSimple.checked = false;
     if (chkAdv) chkAdv.checked = false;
@@ -77,135 +81,34 @@ function autodetectarPresetsUrl(url) {
   if (!url) return;
 
   if (url.includes('github.com')) {
-    // Si no está ya seleccionado uno de github, sugerir Auto-Follow
     if (selectPreset.value !== 'github-follow-preset' && selectPreset.value !== 'github-unfollow-preset') {
       selectPreset.value = 'github-follow-preset';
       aplicarPresetSeleccionado();
     }
   } else if (url.includes('instagram.com')) {
-    if (selectPreset.value !== 'instagram-unfollow-preset') {
-      selectPreset.value = 'instagram-unfollow-preset';
+    if (selectPreset.value !== 'instagram-unfollow-preset' && selectPreset.value !== 'instagram-follow-preset') {
+      selectPreset.value = 'instagram-follow-preset';
+      aplicarPresetSeleccionado();
+    }
+  } else if (url.includes('tiktok.com')) {
+    if (selectPreset.value !== 'tiktok-follow-preset' && selectPreset.value !== 'tiktok-unfollow-preset') {
+      selectPreset.value = 'tiktok-follow-preset';
+      aplicarPresetSeleccionado();
+    }
+  } else if (url.includes('facebook.com')) {
+    if (!selectPreset.value.startsWith('facebook-')) {
+      selectPreset.value = 'facebook-add-friend-preset';
       aplicarPresetSeleccionado();
     }
   } else {
-    // Si no es github ni instagram, y tenemos uno de sus presets específicos, resetear a custom
-    if (selectPreset.value === 'github-follow-preset' || 
-        selectPreset.value === 'github-unfollow-preset' || 
-        selectPreset.value === 'instagram-unfollow-preset') {
+    if (selectPreset.value !== 'custom' && selectPreset.value !== 'next-button') {
       selectPreset.value = 'custom';
       aplicarPresetSeleccionado();
     }
   }
 }
 
-// --- ⏱️ 2. CONTROLES DEL AUTOMÁTICO DE CLICS (CSS CLICKER) ---
-
-// --- ⏱️ 2. CONTROLES DEL AUTOMÁTICO DE CLICS (CSS CLICKER) ---
-
-async function sincronizarParametrosConTab() {
-  try {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (!tab) return;
-    
-    const msVal = parseInt(document.getElementById('clicker-interval-range').value);
-    const humanMode = document.getElementById('clicker-human-mode').checked;
-    const jitterLevel = document.getElementById('clicker-jitter-level').value;
-    const soundMode = document.getElementById('clicker-sound-mode').checked;
-    
-    const esInsta = tab.url && tab.url.includes('instagram.com');
-    const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-    const instagramUnfollow = (chkSimple && esInsta) ? chkSimple.checked : false;
-    
-    await browser.scripting.executeScript({
-      target: { tabId: tab.id },
-      args: [msVal, humanMode, jitterLevel, soundMode, instagramUnfollow],
-      func: (nuevoIntervalo, nuevoHumanMode, nuevoJitterLevel, nuevoSoundMode, nuevoInstagramUnfollow) => {
-        if (window.devtoolkitClicker) {
-          const esInstaTab = window.location.hostname.includes('instagram.com');
-          const finalInstagramUnfollow = esInstaTab ? nuevoInstagramUnfollow : false;
-
-          let cambios = [];
-          if (window.devtoolkitClicker.intervalo !== nuevoIntervalo) {
-            window.devtoolkitClicker.intervalo = nuevoIntervalo;
-            cambios.push(`Velocidad (${nuevoIntervalo}ms)`);
-          }
-          if (window.devtoolkitClicker.humanMode !== nuevoHumanMode) {
-            window.devtoolkitClicker.humanMode = nuevoHumanMode;
-            cambios.push(`Ritmo Humano (${nuevoHumanMode ? 'Sí' : 'No'})`);
-          }
-          if (window.devtoolkitClicker.jitterLevel !== nuevoJitterLevel) {
-            window.devtoolkitClicker.jitterLevel = nuevoJitterLevel;
-            cambios.push(`Variación (${nuevoJitterLevel})`);
-          }
-          if (window.devtoolkitClicker.soundMode !== nuevoSoundMode) {
-            window.devtoolkitClicker.soundMode = nuevoSoundMode;
-            cambios.push(`Sonido (${nuevoSoundMode ? 'Sí' : 'No'})`);
-          }
-          if (esInstaTab && window.devtoolkitClicker.instagramUnfollow !== finalInstagramUnfollow) {
-            window.devtoolkitClicker.instagramUnfollow = finalInstagramUnfollow;
-            cambios.push(`Auto-confirmación Instagram (${finalInstagramUnfollow ? 'Sí' : 'No'})`);
-          }
-          
-          if (cambios.length > 0) {
-            window.devtoolkitClicker.logs.push(`[SISTEMA] Cambios aplicados en tiempo real: ${cambios.join(', ')}.`);
-          }
-        }
-      }
-    });
-  } catch (e) {
-    // Ignorar si no hay pestaña o permisos
-  }
-}
-
-function sincronizarControlesVelocidad(ms, ignorarTab = false) {
-  const intervalRange = document.getElementById('clicker-interval-range');
-  const intervalNumber = document.getElementById('clicker-interval-number');
-  
-  if (intervalRange) intervalRange.value = ms;
-  if (intervalNumber) intervalNumber.value = ms;
-  
-  // Sincronizar radio del modo sencillo
-  const msStr = String(ms);
-  const radio = document.querySelector(`input[name="simple-speed"][value="${msStr}"]`);
-  if (radio) {
-    radio.checked = true;
-  } else {
-    // Si no coincide exactamente con 500, 1500 o 3000, desmarcar todos
-    document.querySelectorAll('input[name="simple-speed"]').forEach(r => r.checked = false);
-  }
-  
-  if (!ignorarTab) {
-    sincronizarParametrosConTab();
-  }
-}
-
-// Sincronizar Sliders y Number Inputs de Intervalos
-const intervalRange = document.getElementById('clicker-interval-range');
-const intervalNumber = document.getElementById('clicker-interval-number');
-
-intervalRange.addEventListener('input', (e) => {
-  intervalNumber.value = e.target.value;
-  sincronizarControlesVelocidad(e.target.value);
-});
-
-intervalNumber.addEventListener('input', (e) => {
-  let val = parseInt(e.target.value);
-  if (isNaN(val)) val = 100;
-  if (val < 100) val = 100;
-  if (val > 10000) val = 10000;
-  intervalRange.value = val;
-  sincronizarControlesVelocidad(val);
-});
-
-// Shortcuts de tiempos
-document.querySelectorAll('.btn-time-shortcut').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const ms = btn.dataset.ms;
-    sincronizarControlesVelocidad(ms);
-  });
-});
-
-// Manejo de Plantillas (Presets)
+// --- ⏱️ 2. CONTROLES DE PLANTILLAS Y PRESETS ---
 function aplicarPresetSeleccionado() {
   const preset = document.getElementById('clicker-preset').value;
   const inputSelector = document.getElementById('clicker-selector');
@@ -216,12 +119,17 @@ function aplicarPresetSeleccionado() {
     inputSelector.value = 'button, input[type="submit"]';
     sincronizarControlesVelocidad(1500);
     optionSequential.checked = true;
-    escribirLogTerminal("[SISTEMA] Preset: GitHub Auto-Follow seleccionado.\n[INFO] Selector: botones o submits con texto 'Follow'.");
+    escribirLogTerminal("[SISTEMA] Preset: GitHub Auto-Follow seleccionado.\n[INFO] Selector: botones o submits con texto 'Follow' o 'Seguir'.");
   } else if (preset === 'github-unfollow-preset') {
     inputSelector.value = 'button, input[type="submit"]';
     sincronizarControlesVelocidad(1500);
     optionSequential.checked = true;
-    escribirLogTerminal("[SISTEMA] Preset: GitHub Auto-Unfollow seleccionado.\n[INFO] Selector: botones que dicen 'Unfollow' o 'Following'.");
+    escribirLogTerminal("[SISTEMA] Preset: GitHub Auto-Unfollow seleccionado.\n[INFO] Selector: botones que dicen 'Unfollow', 'Following' o 'Siguiendo'.");
+  } else if (preset === 'instagram-follow-preset') {
+    inputSelector.value = 'button, div[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: Instagram Auto-Follow seleccionado.\n[SITIO] Selector: botones con texto 'Seguir' o 'Follow'.");
   } else if (preset === 'instagram-unfollow-preset') {
     inputSelector.value = 'button';
     sincronizarControlesVelocidad(1500);
@@ -231,6 +139,40 @@ function aplicarPresetSeleccionado() {
     if (chkSimple) chkSimple.checked = true;
     if (chkAdv) chkAdv.checked = true;
     escribirLogTerminal("[SISTEMA] Preset: Instagram Auto-Unfollow seleccionado.\n[SITIO] Selector: botones con texto 'Siguiendo' o 'Following'.\n[INSTAGRAM] Auto-confirmar ventanas emergentes activado.");
+  } else if (preset === 'tiktok-follow-preset') {
+    inputSelector.value = 'button, div[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: TikTok Auto-Follow seleccionado.\n[SITIO] Selector: botones con texto 'Seguir' o 'Follow'.");
+  } else if (preset === 'tiktok-unfollow-preset') {
+    inputSelector.value = 'button, div[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: TikTok Auto-Unfollow seleccionado.\n[SITIO] Selector: botones con texto 'Siguiendo', 'Following' o 'Unfollow'.");
+  } else if (preset === 'facebook-add-friend-preset') {
+    inputSelector.value = 'div[role="button"], button, a[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: Facebook Agregar Amigos seleccionado.\n[SITIO] Selector: botones con texto 'Agregar a amigos' o 'Add friend'.");
+  } else if (preset === 'facebook-cancel-request-preset') {
+    inputSelector.value = 'div[role="button"], button, a[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: Facebook Cancelar Solicitud seleccionado.\n[SITIO] Selector: botones con texto 'Cancelar solicitud'.");
+  } else if (preset === 'facebook-follow-preset') {
+    inputSelector.value = 'div[role="button"], button, a[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: Facebook Seguir seleccionado.\n[SITIO] Selector: botones con texto 'Seguir' o 'Follow'.");
+  } else if (preset === 'facebook-unfollow-preset') {
+    inputSelector.value = 'div[role="button"], button, a[role="button"]';
+    sincronizarControlesVelocidad(1500);
+    optionSequential.checked = true;
+    const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
+    const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
+    if (chkSimple) chkSimple.checked = true;
+    if (chkAdv) chkAdv.checked = true;
+    escribirLogTerminal("[SISTEMA] Preset: Facebook Dejar de Seguir seleccionado.\n[SITIO] Selector: botones con texto 'Siguiendo', 'Following'.\n[FACEBOOK] Auto-confirmar ventanas emergentes activado.");
   } else if (preset === 'next-button') {
     inputSelector.value = '.btn-siguiente, .btn-next, #next, button[id*="next"], button[class*="next"]';
     sincronizarControlesVelocidad(1000);
@@ -240,897 +182,6 @@ function aplicarPresetSeleccionado() {
     // Custom
     inputSelector.value = '';
     escribirLogTerminal("[SISTEMA] Preset Personalizado.\n[INFO] Escribe tu propio selector CSS o usa el botón 'Apuntar'.");
-  }
-}
-
-document.getElementById('clicker-preset').addEventListener('change', aplicarPresetSeleccionado);
-
-// Escritura de Logs en Terminal (Segura, programática y color-coded sin innerHTML)
-function escribirLogTerminal(texto, append = false) {
-  const terminal = document.getElementById('terminal-logs');
-  if (!terminal) return;
-
-  if (!append) {
-    terminal.textContent = "";
-  }
-
-  const lineas = texto.split('\n');
-  lineas.forEach(linea => {
-    if (!linea.trim()) return;
-
-    const div = document.createElement('div');
-    div.className = 'log-line';
-
-    // Buscar si empieza por corchetes, ej: [CLICK] o [SISTEMA]
-    const match = linea.match(/^\[([^\]]+)\](.*)$/);
-    if (match) {
-      const tipo = match[1].trim();
-      const mensaje = match[2];
-
-      div.classList.add(`log-type-${tipo.toLowerCase()}`);
-
-      const spanPrefix = document.createElement('span');
-      spanPrefix.className = 'log-prefix';
-      spanPrefix.textContent = `[${tipo}]`;
-
-      const spanMsg = document.createElement('span');
-      spanMsg.className = 'log-msg';
-      spanMsg.textContent = mensaje;
-
-      div.appendChild(spanPrefix);
-      div.appendChild(spanMsg);
-    } else {
-      div.classList.add('log-type-default');
-      const spanMsg = document.createElement('span');
-      spanMsg.className = 'log-msg';
-      spanMsg.textContent = linea;
-      div.appendChild(spanMsg);
-    }
-
-    terminal.appendChild(div);
-  });
-
-  // Auto-scroll
-  terminal.scrollTop = terminal.scrollHeight;
-}
-
-document.getElementById('btn-clear-logs').addEventListener('click', async () => {
-  const msg = await obtenerMensajeEspera();
-  escribirLogTerminal(msg);
-});
-
-// --- 🚀 3. MOTOR CORE DEL CLICKER (INYECTABLE) ---
-async function iniciarClicker() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return;
-
-  const selector = document.getElementById('clicker-selector').value.trim();
-  const intervaloMs = parseInt(intervalRange.value);
-  const estrategia = document.querySelector('input[name="clicker-strategy"]:checked').value;
-  const preset = document.getElementById('clicker-preset').value;
-  const textFilter = document.getElementById('clicker-text-filter').value.trim();
-  const humanMode = document.getElementById('clicker-human-mode').checked;
-  const jitterLevel = document.getElementById('clicker-jitter-level').value;
-  const soundMode = document.getElementById('clicker-sound-mode').checked;
-  
-  const esInsta = tab.url && tab.url.includes('instagram.com');
-  const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-  const instagramUnfollow = (chkSimple && esInsta) ? chkSimple.checked : false;
-
-  if (!selector) {
-    alert("Por favor, introduce un selector CSS válido.");
-    return;
-  }
-
-  // Restablecer panel de estadísticas a cero para la nueva ejecución (Consola)
-  const countTerm = document.getElementById('clicks-count-term');
-  const speedTerm = document.getElementById('speed-average-term');
-  const savedTerm = document.getElementById('time-saved-term');
-  if (countTerm) countTerm.innerText = "0";
-  if (speedTerm) speedTerm.innerText = "0.00s";
-  if (savedTerm) savedTerm.innerText = "0.0s";
-
-  const logTextFilter = textFilter ? ` (con texto "${textFilter}")` : '';
-  const logHuman = humanMode ? `\n[HUMANO] Ritmo Humano: Activado (${jitterLevel === 'low' ? 'Suave' : jitterLevel === 'high' ? 'Caótico' : 'Humano'})` : `\n[HUMANO] Ritmo Humano: Desactivado`;
-  const logSound = soundMode ? `\n[SISTEMA] Sonido Arcade: Activado` : `\n[SISTEMA] Sonido Arcade: Desactivado`;
-  const logInstagram = (instagramUnfollow && esInsta) ? `\n[INSTAGRAM] Auto-confirmar Dejar de Seguir: Activado` : ``;
-  const logSitio = esInsta ? `\n[SITIO] Detectado Instagram. Activando preset y funciones especiales de confirmación.` : ``;
-
-  escribirLogTerminal(`[INICIO] Inicializando clicker en pestaña...\n[SISTEMA] Selector: "${selector}"${logTextFilter}\n[SISTEMA] Intervalo: ${intervaloMs}ms\n[SISTEMA] Estrategia: ${estrategia}${logHuman}${logSound}${logInstagram}${logSitio}`);
-
-  try {
-    await browser.scripting.executeScript({
-      target: { tabId: tab.id },
-      args: [selector, intervaloMs, estrategia, preset, textFilter, humanMode, jitterLevel, soundMode, instagramUnfollow],
-      func: (sel, timeMs, strategy, currentPreset, targetTextFilter, isHumanMode, levelJitter, isSoundMode, instagramUnfollow) => {
-        // Detener previamente por seguridad
-        if (window.devtoolkitClickerInterval) {
-          clearInterval(window.devtoolkitClickerInterval);
-        }
-        if (window.devtoolkitClickerTimeout) {
-          clearTimeout(window.devtoolkitClickerTimeout);
-        }
-
-        const esPaginaInstagram = window.location.hostname.includes('instagram.com');
-        const finalInstagramUnfollow = esPaginaInstagram ? instagramUnfollow : false;
-
-        // Estructura de control global en la pestaña activa
-        window.devtoolkitClicker = {
-          activo: true,
-          selector: sel,
-          intervalo: timeMs,
-          estrategia: strategy,
-          preset: currentPreset,
-          textFilter: targetTextFilter,
-          humanMode: isHumanMode,
-          jitterLevel: levelJitter,
-          clicksRealizados: 0,
-          ultimoClickTime: Date.now(),
-          startTime: Date.now(),
-          soundMode: isSoundMode,
-          instagramUnfollow: finalInstagramUnfollow,
-          logs: [
-            `[INICIO] Motor de clics listo.`,
-            ...(esPaginaInstagram ? [`[SITIO] En Instagram: activando preset y auto-confirmación.`] : [])
-          ]
-        };
-
-        // Helper para obtener el texto real visible de un elemento, soportando inputs y aria-labels
-        const obtenerTextoElemento = (el) => {
-          if (!el) return '';
-          if (el.tagName && el.tagName.toLowerCase() === 'input') {
-            return el.value ? el.value.trim() : '';
-          }
-          let txt = el.textContent ? el.textContent.trim() : '';
-          if (!txt) {
-            txt = el.getAttribute('aria-label') || el.value || '';
-            txt = txt.trim();
-          }
-          return txt;
-        };
-
-        const buscarBotonConfirmacion = () => {
-          const botones = Array.from(document.querySelectorAll('button'));
-          const palabrasConfirmacion = ['dejar de seguir', 'unfollow'];
-          return botones.find(b => {
-            const txt = obtenerTextoElemento(b).trim().toLowerCase();
-            return palabrasConfirmacion.some(word => txt === word || txt.includes(word));
-          });
-        };
-
-        // Función para recopilar los botones correspondientes
-        const obtenerElementos = () => {
-          let lista = Array.from(document.querySelectorAll(sel));
-          
-          // Filtrar por visibilidad para evitar hacer clics en duplicados ocultos (responsivos/móviles)
-          lista = lista.filter(el => {
-            const rect = el.getBoundingClientRect();
-            const estilo = window.getComputedStyle(el);
-            return rect.width > 0 && 
-                   rect.height > 0 && 
-                   estilo.display !== 'none' && 
-                   estilo.visibility !== 'hidden';
-          });
-          
-          // Salvaguarda Universal Avanzada:
-          // Si el preset actual NO es explícitamente para dejar de seguir (unfollow),
-          // excluimos proactivamente cualquier botón cuyo texto indique que ya se le sigue.
-          if (currentPreset !== 'github-unfollow-preset' && currentPreset !== 'instagram-unfollow-preset' && !finalInstagramUnfollow) {
-            const palabrasBloqueadas = ['unfollow', 'unfallow', 'unfollowed', 'following', 'siguiendo', 'dejar de seguir', 'solicitado', 'requested'];
-            lista = lista.filter(el => {
-              const txt = obtenerTextoElemento(el).toLowerCase();
-              const esUnfollowOrFollowing = palabrasBloqueadas.some(word => txt.includes(word));
-              return !esUnfollowOrFollowing;
-            });
-          }
-          
-          // Filtros especiales para presets de GitHub e Instagram
-          if (currentPreset === 'github-follow-preset') {
-            lista = lista.filter(el => {
-              const texto = obtenerTextoElemento(el);
-              return texto === 'Follow' || texto === 'Seguir';
-            });
-          } else if (currentPreset === 'github-unfollow-preset') {
-            lista = lista.filter(el => {
-              const texto = obtenerTextoElemento(el);
-              return texto === 'Unfollow' || texto === 'Following' || texto === 'Siguiendo';
-            });
-          } else if (currentPreset === 'instagram-unfollow-preset' && esPaginaInstagram) {
-            lista = lista.filter(el => {
-              const texto = obtenerTextoElemento(el);
-              return texto === 'Siguiendo' || texto === 'Following';
-            });
-          } else if (targetTextFilter) {
-            // Filtrar dinámicamente por texto exacto del elemento apuntado visualmente
-            lista = lista.filter(el => {
-              return obtenerTextoElemento(el).toLowerCase().includes(targetTextFilter.toLowerCase());
-            });
-          }
-          
-          return lista;
-        };
-
-        const listadoBotones = obtenerElementos();
-        window.devtoolkitClicker.logs.push(`[SITIO] Encontrados ${listadoBotones.length} elementos que coinciden.`);
-
-        if (listadoBotones.length === 0) {
-          window.devtoolkitClicker.logs.push(`[ERROR] No hay elementos para clickear.`);
-          window.devtoolkitClicker.activo = false;
-          return;
-        }
-
-        let indice = 0;
-
-        // Lógica de Ejecución según Estrategia
-        if (strategy === 'all') {
-          // Simultáneo
-          listadoBotones.forEach((btn, index) => {
-            try {
-              // Comprobar si ya fue clickeado en esta sesión para evitar duplicados
-              if (btn.dataset.dtkClicked === 'true') {
-                window.devtoolkitClicker.logs.push(`[OMITIDO] Fila #${index + 1} ya procesada.`);
-                return;
-              }
-
-              btn.click();
-              btn.dataset.dtkClicked = 'true';
-              btn.style.outline = "2px dashed #39d353";
-              btn.style.outlineOffset = "2px";
-              window.devtoolkitClicker.clicksRealizados++;
-              window.devtoolkitClicker.logs.push(`[CLICK] Clic Fila #${index + 1} realizado.`);
-            } catch (err) {
-              window.devtoolkitClicker.logs.push(`[ERROR] Falló clic en Fila #${index + 1}: ${err.message}`);
-            }
-          });
-          window.devtoolkitClicker.logs.push(`[FIN] Todos los clicks se dispararon de forma simultánea.`);
-          window.devtoolkitClicker.activo = false; // Finalizado
-        } else {
-          // Secuencial iterativo (Modo Humano Seguro con retrasos aleatorios y pausas de respiro)
-          const hacerSiguienteClic = () => {
-            if (!window.devtoolkitClicker || !window.devtoolkitClicker.activo) return;
-
-            if (indice >= listadoBotones.length) {
-              window.devtoolkitClicker.logs.push(`[FIN] Ejecución secuencial completada.`);
-              window.devtoolkitClicker.activo = false;
-              return;
-            }
-
-            const botonActual = listadoBotones[indice];
-            
-            // Comprobar si el botón ya cambió de estado (ej: ya se clickeó o cambió de texto)
-            const textoBoton = obtenerTextoElemento(botonActual).toLowerCase();
-            let yaClickeado = false;
-            
-            // Acceder dinámicamente a los parámetros que pueden actualizarse en tiempo real
-            const actPreset = window.devtoolkitClicker.preset || currentPreset;
-            const actInstagramUnfollow = esPaginaInstagram ? (typeof window.devtoolkitClicker.instagramUnfollow !== 'undefined' ? window.devtoolkitClicker.instagramUnfollow : instagramUnfollow) : false;
-            const actHumanMode = typeof window.devtoolkitClicker.humanMode !== 'undefined' ? window.devtoolkitClicker.humanMode : isHumanMode;
-            const actJitterLevel = window.devtoolkitClicker.jitterLevel || levelJitter;
-            const actSoundMode = typeof window.devtoolkitClicker.soundMode !== 'undefined' ? window.devtoolkitClicker.soundMode : isSoundMode;
-
-            if (botonActual.dataset.dtkClicked === 'true') {
-              yaClickeado = true;
-            } else if (actPreset !== 'github-unfollow-preset' && actPreset !== 'instagram-unfollow-preset' && !actInstagramUnfollow) {
-              // Salvaguarda en vivo: si no es preset de dejar de seguir, ignorar si tiene palabras de "unfollow/siguiendo"
-              const palabrasBloqueadas = ['unfollow', 'unfallow', 'unfollowed', 'following', 'siguiendo', 'dejar de seguir', 'solicitado', 'requested'];
-              const esUnfollowOrFollowing = palabrasBloqueadas.some(word => textoBoton.includes(word));
-              if (esUnfollowOrFollowing) {
-                yaClickeado = true;
-              }
-            } else if ((actPreset === 'github-unfollow-preset' || (actPreset === 'instagram-unfollow-preset' && esPaginaInstagram) || actInstagramUnfollow) && (textoBoton === 'follow' || textoBoton === 'seguir')) {
-              yaClickeado = true;
-            }
-
-            let baseInterval = (window.devtoolkitClicker && typeof window.devtoolkitClicker.intervalo !== 'undefined') ? window.devtoolkitClicker.intervalo : timeMs;
-            let delayActual = baseInterval;
-
-            if (!yaClickeado) {
-              try {
-                botonActual.click();
-                botonActual.dataset.dtkClicked = 'true';
-                botonActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Retroalimentación visual en vivo
-                botonActual.style.outline = "2px dashed #39d353";
-                botonActual.style.outlineOffset = "2px";
-                
-                const ahora = Date.now();
-                const tiempoTranscurrido = window.devtoolkitClicker.ultimoClickTime ? (ahora - window.devtoolkitClicker.ultimoClickTime) : 0;
-                window.devtoolkitClicker.ultimoClickTime = ahora;
-                
-                window.devtoolkitClicker.clicksRealizados++;
-                
-                let logMsg = `[CLICK] Clic secuencial #${window.devtoolkitClicker.clicksRealizados}/${listadoBotones.length} realizado`;
-                if (tiempoTranscurrido > 0) {
-                  logMsg += ` (retraso real: ${(tiempoTranscurrido / 1000).toFixed(2)}s).`;
-                } else {
-                  logMsg += ` (inicio).`;
-                }
-                window.devtoolkitClicker.logs.push(logMsg);
-
-                // --- GESTIÓN DE AUTO-CONFIRMACIÓN DE INSTAGRAM ---
-                if (actInstagramUnfollow && esPaginaInstagram) {
-                  // Esperar un momento a que aparezca la ventana emergente/modal
-                  setTimeout(() => {
-                    const btnConfirmar = buscarBotonConfirmacion();
-                    if (btnConfirmar) {
-                      btnConfirmar.click();
-                      window.devtoolkitClicker.logs.push(`[INSTAGRAM] Ventana de confirmación detectada. Se hizo clic en "Dejar de seguir" automáticamente.`);
-                    } else {
-                      window.devtoolkitClicker.logs.push(`[AVISO] No se encontró el botón de confirmación "Dejar de seguir" en la ventana emergente.`);
-                    }
-                  }, 400);
-                }
-
-                // Reproducir sonido arcade si está activo
-                if (actSoundMode) {
-                  try {
-                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    
-                    // Sonido retro "click" de tipo arcade (pitch alto que desciende rápidamente)
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.08);
-                    
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
-                    
-                    osc.start(audioCtx.currentTime);
-                    osc.stop(audioCtx.currentTime + 0.08);
-                  } catch (ae) {
-                    // Ignorar errores de autoplay del navegador
-                  }
-                }
-              } catch (e) {
-                window.devtoolkitClicker.logs.push(`[ERROR] Error en clic secuencial #${indice + 1}: ${e.message}`);
-              }
-
-              if (actHumanMode) {
-                // Rango de variación según el nivel
-                let minPercent = -0.10; // -10% por defecto (mínimo tiempo de reacción)
-                let maxPercent = 0.30;  // +30% por defecto (ligeros retrasos de atención)
-
-                if (actJitterLevel === 'low') {
-                  minPercent = -0.05;
-                  maxPercent = 0.15;
-                } else if (actJitterLevel === 'high') {
-                  minPercent = -0.15;
-                  maxPercent = 0.50;
-                }
-
-                // Calcular factor aleatorio en el rango [minPercent, maxPercent]
-                const factorAleatorio = minPercent + Math.random() * (maxPercent - minPercent);
-                delayActual = Math.round(baseInterval * (1 + factorAleatorio));
-
-                // Asegurar un mínimo absoluto de 150ms para no disparar alertas
-                delayActual = Math.max(150, delayActual);
-
-                // Pausa inteligente cada 10 clics (simula descanso humano de lectura)
-                if (window.devtoolkitClicker.clicksRealizados > 0 && window.devtoolkitClicker.clicksRealizados % 10 === 0) {
-                  const pausaExtra = 3000 + Math.random() * 4000; // Entre 3 y 7 segundos adicionales
-                  delayActual += pausaExtra;
-                  window.devtoolkitClicker.logs.push(`[HUMANO] Pausa preventiva de seguridad: ${(pausaExtra / 1000).toFixed(1)}s de respiro...`);
-                }
-              }
-            } else {
-              window.devtoolkitClicker.logs.push(`[OMITIDO] Fila #${indice + 1} ya procesada.`);
-              delayActual = 100; // Si ya fue procesado, avanza rápido
-            }
-
-            indice++;
-
-            // Programar siguiente clic con el retraso calculado
-            window.devtoolkitClickerTimeout = setTimeout(hacerSiguienteClic, delayActual);
-          };
-
-          // Iniciar la secuencia recursiva
-          window.devtoolkitClickerTimeout = setTimeout(hacerSiguienteClic, 100);
-        }
-      }
-    });
-
-    comenzarPollingEstado(tab.id);
-  } catch (err) {
-    escribirLogTerminal(`❌ Error al inyectar script: ${err.message}`, true);
-  }
-}
-
-// Detener Clicker
-async function detenerClicker() {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return;
-
-  escribirLogTerminal(`⏹️ Deteniendo clicker en pestaña...`, true);
-
-  try {
-    await browser.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => {
-        if (window.devtoolkitClickerInterval) {
-          clearInterval(window.devtoolkitClickerInterval);
-        }
-        if (window.devtoolkitClickerTimeout) {
-          clearTimeout(window.devtoolkitClickerTimeout);
-        }
-        if (window.devtoolkitClicker) {
-          window.devtoolkitClicker.activo = false;
-          window.devtoolkitClicker.logs.push(`[PARADA] Cancelado por el usuario.`);
-        }
-      }
-    });
-    
-    actualizarUIParado();
-  } catch (e) {
-    escribirLogTerminal(`❌ Error al detener clicker: ${e.message}`, true);
-  }
-}
-
-// --- 📈 4. POLLING DE ESTADO EN TIEMPO REAL ---
-function comenzarPollingEstado(tabId) {
-  if (pollingIntervalId) {
-    clearInterval(pollingIntervalId);
-  }
-
-  pollingIntervalId = setInterval(async () => {
-    try {
-      const resultado = await browser.scripting.executeScript({
-        target: { tabId: tabId },
-        func: () => {
-          return window.devtoolkitClicker ? window.devtoolkitClicker : null;
-        }
-      });
-
-      const estado = resultado[0].result;
-
-      if (!estado) {
-        actualizarUIParado();
-        return;
-      }
-
-      const countEl = document.getElementById('clicks-count-term');
-      const ultimoClicks = countEl ? (parseInt(countEl.innerText) || 0) : 0;
-
-      // Actualizar contador y logs (Consola)
-      if (countEl) countEl.innerText = estado.clicksRealizados;
-      escribirLogTerminal(estado.logs.join('\n'));
-
-      // Reproducir sonido arcade si los clics aumentaron y el modo de sonido está activo
-      const soundMode = document.getElementById('clicker-sound-mode').checked;
-      if (soundMode && estado.clicksRealizados > ultimoClicks) {
-        reproducirSonidoArcadeSidebar();
-      }
-
-      // Actualizar estadísticas avanzadas (Consola)
-      const tiempoAhorrado = estado.clicksRealizados * 1.5; // Estimado de 1.5s ahorrados por click
-      const timeSavedTerm = document.getElementById('time-saved-term');
-      if (timeSavedTerm) timeSavedTerm.innerText = `${tiempoAhorrado.toFixed(1)}s`;
-
-      const speedAvgTerm = document.getElementById('speed-average-term');
-      if (estado.clicksRealizados > 0 && estado.startTime) {
-        const tiempoTotalMs = Date.now() - estado.startTime;
-        const ritmoMedio = (tiempoTotalMs / 1000) / estado.clicksRealizados;
-        if (speedAvgTerm) speedAvgTerm.innerText = `${ritmoMedio.toFixed(2)}s`;
-      } else {
-        if (speedAvgTerm) speedAvgTerm.innerText = "0.00s";
-      }
-
-      // Actualizar botones y badge de estado
-      const badgeTerm = document.getElementById('status-badge-term');
-      const btnStart = document.getElementById('btn-iniciar-clicker');
-      const btnStop = document.getElementById('btn-detener-clicker');
-
-      if (estado.activo) {
-        if (badgeTerm) {
-          badgeTerm.innerText = "● EJECUTANDO";
-          badgeTerm.className = "badge-running";
-        }
-        
-        btnStart.disabled = true;
-        btnStop.disabled = false;
-        
-        // Activar animación en la consola y la pestaña
-        document.querySelectorAll('.terminal-box').forEach(term => term.classList.add('working'));
-        const tabTerm = document.getElementById('tab-terminal');
-        if (tabTerm) tabTerm.classList.add('working');
-      } else {
-        actualizarUIParado();
-      }
-
-    } catch (e) {
-      // Si ocurre error de conexión, apagamos polling
-      clearInterval(pollingIntervalId);
-      pollingIntervalId = null;
-    }
-  }, 400); // Frecuencia de refresco rápido
-}
-
-async function obtenerMensajeEspera() {
-  try {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    const esInsta = tab && tab.url && tab.url.includes('instagram.com');
-    if (esInsta) {
-      return "[SISTEMA] Esperando que inicies el clicker...\n[SITIO] En Instagram. Auto-confirmación de ventana emergente y preset especial de Dejar de seguir listos.";
-    }
-  } catch (e) {
-    // Ignorar errores de consulta de pestañas
-  }
-  return "[SISTEMA] Esperando que inicies el clicker...";
-}
-
-async function actualizarUIParado() {
-  const badgeTerm = document.getElementById('status-badge-term');
-  const btnStart = document.getElementById('btn-iniciar-clicker');
-  const btnStop = document.getElementById('btn-detener-clicker');
-
-  if (badgeTerm) {
-    badgeTerm.innerText = "● DETENIDO";
-    badgeTerm.className = "badge-stopped";
-  }
-
-  btnStart.disabled = false;
-  btnStop.disabled = true;
-
-  // Desactivar animación en la consola y la pestaña
-  document.querySelectorAll('.terminal-box').forEach(term => term.classList.remove('working'));
-  const tabTerm = document.getElementById('tab-terminal');
-  if (tabTerm) tabTerm.classList.remove('working');
-
-  if (pollingIntervalId) {
-    clearInterval(pollingIntervalId);
-    pollingIntervalId = null;
-  }
-
-  const msg = await obtenerMensajeEspera();
-  escribirLogTerminal(msg);
-}
-
-// --- 🎯 5. INSPECTOR VISUAL DE ELEMENTOS (APUNTAR) ---
-async function comenzarSeleccionVisual() {
-  try {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id) {
-      escribirLogTerminal("⚠️ No se pudo detectar una pestaña web activa.\n👉 Haz clic en la página web primero y luego pulsa 'Apuntar Elemento' en el clicker.", true);
-      return;
-    }
-
-    setInspectActive(true);
-    escribirLogTerminal("🎯 Modo Inspección Activado.\nVe a la página web y haz clic en el botón o elemento que deseas automatizar.\n(La extensión detectará automáticamente todos los botones idénticos del listado)");
-
-    // Validar proactivamente si es una página del sistema protegida
-    if (tab.url && (
-      tab.url.startsWith('about:') || 
-      tab.url.startsWith('chrome:') || 
-      tab.url.startsWith('edge:') || 
-      tab.url.startsWith('view-source:')
-    )) {
-      throw new Error("Página del sistema protegida");
-    }
-
-    await browser.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => {
-        // Inyectamos estilo de hover temporal
-        const styleEl = document.createElement('style');
-        styleEl.id = 'devtoolkit-inspect-style';
-        styleEl.textContent = `
-          .dtk-inspect-hover {
-            outline: 2px dashed #00f2fe !important;
-            outline-offset: 2px !important;
-            background-color: rgba(0, 242, 254, 0.15) !important;
-            cursor: crosshair !important;
-            transition: outline 0.1s ease !important;
-          }
-          * {
-            cursor: crosshair !important;
-          }
-        `;
-        document.head.appendChild(styleEl);
-
-        let lastEl = null;
-
-        const onMouseMove = (e) => {
-          e.stopPropagation();
-          let target = e.target;
-          
-          // Buscar hacia arriba el contenedor cliqueable real (button, a, input, etc.)
-          while (target && target.tagName && target.parentNode && target.tagName.toLowerCase() !== 'body') {
-            const tag = target.tagName.toLowerCase();
-            if (tag === 'button' || tag === 'a' || tag === 'input' || target.getAttribute('role') === 'button') {
-              break;
-            }
-            target = target.parentNode;
-          }
-          if (!target || !target.tagName) target = e.target;
-
-          if (target === lastEl) return;
-          if (lastEl) lastEl.classList.remove('dtk-inspect-hover');
-          
-          target.classList.add('dtk-inspect-hover');
-          lastEl = target;
-        };
-
-        const onClick = (e) => {
-          // Evitar que la página ejecute acciones nativas (navegación, submit de form, etc.)
-          e.preventDefault();
-          e.stopPropagation();
-
-          let clickedEl = e.target;
-          let tempEl = clickedEl;
-          
-          // Buscar el ancestro interactivo más cercano
-          while (tempEl && tempEl.tagName && tempEl.parentNode && tempEl.tagName.toLowerCase() !== 'body') {
-            const tag = tempEl.tagName.toLowerCase();
-            if (tag === 'button' || tag === 'a' || tag === 'input' || tempEl.getAttribute('role') === 'button') {
-              clickedEl = tempEl;
-              break;
-            }
-            tempEl = tempEl.parentNode;
-          }
-          
-          cleanup();
-          
-          const generalizedData = getGeneralizedSelector(clickedEl);
-          
-          browser.runtime.sendMessage({
-            type: 'DTK_ELEMENT_SELECTED',
-            selector: generalizedData.selector,
-            textFilter: generalizedData.textFilter,
-            isGitHub: window.location.hostname.includes('github.com'),
-            isInstagram: window.location.hostname.includes('instagram.com')
-          });
-        };
-
-        const onKeyDown = (e) => {
-          if (e.key === 'Escape') {
-            cleanup();
-            browser.runtime.sendMessage({
-              type: 'DTK_SELECTION_CANCELLED'
-            });
-          }
-        };
-
-        const cleanup = () => {
-          if (lastEl) lastEl.classList.remove('dtk-inspect-hover');
-          document.removeEventListener('mousemove', onMouseMove, true);
-          document.removeEventListener('click', onClick, true);
-          document.removeEventListener('keydown', onKeyDown, true);
-          const style = document.getElementById('devtoolkit-inspect-style');
-          if (style) style.remove();
-        };
-
-        // Genera el selector generalizado para todos los botones del listado
-        function getGeneralizedSelector(el) {
-          if (!el || !el.tagName) {
-            return { selector: 'button', textFilter: '' };
-          }
-          
-          const tagName = el.tagName.toLowerCase();
-          
-          // Obtener texto compatible con inputs y aria-labels
-          let text = '';
-          if (tagName === 'input') {
-            text = el.value ? el.value.trim() : '';
-          } else {
-            text = el.textContent ? el.textContent.trim() : '';
-            if (!text) {
-              text = el.getAttribute('aria-label') || el.value || '';
-              text = text.trim();
-            }
-          }
-          
-          let bestSelector = tagName;
-          
-          // 1. Intentar encontrar una clase de grupo compartida o única
-          if (el.classList && el.classList.length > 0) {
-            const validClasses = Array.from(el.classList).filter(c => {
-              if (!c || isDynamicClass(c)) return false;
-              
-              try {
-                // Medir cuántos elementos de este tipo comparten esta clase en la página
-                const count = document.querySelectorAll(tagName + '.' + CSS.escape(c)).length;
-                return count >= 1 && count < 250;
-              } catch (err) {
-                return false;
-              }
-            });
-            
-            if (validClasses.length > 0) {
-              bestSelector = `${tagName}.${validClasses.map(c => CSS.escape(c)).join('.')}`;
-            }
-          }
-          
-          // 2. Si no tiene clases específicas pero tiene ID estructurado común
-          if (bestSelector === tagName && el.id) {
-            const cleanId = el.id.replace(/\d+/g, '');
-            if (cleanId && cleanId.length > 2) {
-              bestSelector = `${tagName}[id*="${cleanId}"]`;
-            }
-          }
-          
-          return {
-            selector: bestSelector,
-            textFilter: text || ''
-          };
-        }
-
-        function isDynamicClass(c) {
-          return /^[a-zA-Z0-9_-]+-[0-9a-fA-F]{5,10}$/.test(c) || /^(css|jss|styled|__)\w+/.test(c);
-        }
-
-        document.addEventListener('mousemove', onMouseMove, true);
-        document.addEventListener('click', onClick, true);
-        document.addEventListener('keydown', onKeyDown, true);
-      }
-    });
-  } catch (err) {
-    console.error("Error al inyectar inspector:", err);
-    
-    // Tratamiento seguro en caso de que tab no esté definida
-    let isSystemPage = false;
-    try {
-      const activeTabs = await browser.tabs.query({ active: true, currentWindow: true });
-      const activeTab = activeTabs[0];
-      if (activeTab && activeTab.url) {
-        isSystemPage = activeTab.url.startsWith('about:') || 
-                       activeTab.url.startsWith('chrome:') || 
-                       activeTab.url.startsWith('edge:') || 
-                       activeTab.url.startsWith('view-source:');
-      }
-    } catch (e) {
-      // Ignorar fallo secundario de tab query
-    }
-
-    if (isSystemPage || (err.message && (err.message.includes("host permission") || err.message.includes("cannot be scripted") || err.message.includes("denied") || err.message.includes("sistema")))) {
-      escribirLogTerminal(`⚠️ ¡Página del sistema o protegida!\nNo se pueden inyectar scripts en páginas internas del navegador.\n\n👉 ¡Ve a tu página web real, abre la extensión allí y pulsa "Apuntar"!`, true);
-    } else {
-      escribirLogTerminal(`❌ Error de Selección: ${err.message || err}`, true);
-    }
-    
-    setInspectActive(false);
-  }
-}
-
-// Receptor de Mensajería Nativa (Web -> Sidebar)
-browser.runtime.onMessage.addListener((message) => {
-  if (message.type === 'DTK_ELEMENT_SELECTED') {
-    const { selector, textFilter, isGitHub, isInstagram } = message;
-    
-    document.getElementById('clicker-selector').value = selector;
-    window.lastTextFilter = textFilter;
-    document.getElementById('clicker-text-filter').value = textFilter || '';
-    
-    // Auto-detección inteligente de presets de GitHub e Instagram
-    if (isGitHub) {
-      const textLower = textFilter.toLowerCase();
-      if (textLower === 'follow' || textLower === 'seguir') {
-        document.getElementById('clicker-preset').value = 'github-follow-preset';
-        document.getElementById('clicker-selector').value = 'button, input[type="submit"]';
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: GitHub Auto-Follow (Seguir).\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      } else if (textLower === 'unfollow' || textLower === 'following' || textLower === 'siguiendo') {
-        document.getElementById('clicker-preset').value = 'github-unfollow-preset';
-        document.getElementById('clicker-selector').value = 'button, input[type="submit"]';
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: GitHub Auto-Unfollow.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      } else {
-        document.getElementById('clicker-preset').value = 'custom';
-        const logTextFilter = textFilter ? ` con texto "${textFilter}"` : '';
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\nSelector generalizado: "${selector}"${logTextFilter}.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      }
-    } else if (isInstagram) {
-      const textLower = textFilter.toLowerCase();
-      if (textLower === 'seguir' || textLower === 'follow') {
-        document.getElementById('clicker-preset').value = 'custom';
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Detectado en Instagram (Seguir).\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      } else if (textLower === 'siguiendo' || textLower === 'following') {
-        document.getElementById('clicker-preset').value = 'instagram-unfollow-preset';
-        document.getElementById('clicker-selector').value = 'button';
-        const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-        const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
-        if (chkSimple) chkSimple.checked = true;
-        if (chkAdv) chkAdv.checked = true;
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: Instagram Auto-Unfollow.\n📸 Activada auto-confirmación de ventanas emergentes "Dejar de seguir".\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      } else {
-        document.getElementById('clicker-preset').value = 'custom';
-        const logTextFilter = textFilter ? ` con texto "${textFilter}"` : '';
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\nSelector generalizado: "${selector}"${logTextFilter}.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-      }
-    } else {
-      document.getElementById('clicker-preset').value = 'custom';
-      const logTextFilter = textFilter ? ` con texto "${textFilter}"` : '';
-      escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\nSelector generalizado: "${selector}"${logTextFilter}.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
-    }
-    
-    setInspectActive(false);
-    actualizarVisualSelectorSimple();
-    
-    // Iniciar el clicker de forma automática e inmediata (con 600ms de retraso para el foco)
-    setTimeout(() => {
-      iniciarClicker();
-    }, 600);
-    
-  } else if (message.type === 'DTK_SELECTION_CANCELLED') {
-    escribirLogTerminal("⚠️ Selección cancelada por el usuario.", true);
-    setInspectActive(false);
-  }
-});
-
-// --- 🛠️ HELPER STATE FOR SIMPLE/ADVANCED MODES ---
-function setInspectActive(active) {
-  const btnAdv = document.getElementById('btn-inspect-element');
-  const btnSim = document.getElementById('btn-inspect-simple');
-  
-  if (active) {
-    if (btnAdv) {
-      btnAdv.classList.add('active-inspecting');
-      btnAdv.textContent = "● Seleccionando...";
-    }
-    if (btnSim) {
-      btnSim.classList.add('active-inspecting');
-      btnSim.textContent = "● Seleccionando...";
-    }
-  } else {
-    if (btnAdv) {
-      btnAdv.classList.remove('active-inspecting');
-      btnAdv.textContent = "🎯 Apuntar";
-    }
-    if (btnSim) {
-      btnSim.classList.remove('active-inspecting');
-      btnSim.textContent = "🎯 Apuntar Elemento";
-    }
-  }
-}
-
-function actualizarVisualSelectorSimple() {
-  const selector = document.getElementById('clicker-selector').value.trim();
-  const textFilter = document.getElementById('clicker-text-filter').value.trim();
-  const descEl = document.getElementById('simple-target-desc');
-  const iconEl = document.querySelector('.simple-target-icon');
-  const titleEl = document.querySelector('.simple-target-title');
-  const simpleTargetBox = document.getElementById('simple-target-status');
-
-  if (selector) {
-    if (iconEl) iconEl.textContent = "🎯";
-    if (titleEl) titleEl.textContent = "¡Elemento Listo!";
-    if (descEl) {
-      const label = textFilter ? `Texto "${textFilter}"` : `Selector CSS "${selector}"`;
-      // Construir nodos de forma 100% segura para evitar innerHTML (Rechazo de Firefox Add-ons)
-      descEl.textContent = "";
-      
-      descEl.appendChild(document.createTextNode("Detectado: "));
-      
-      const strongEl = document.createElement('strong');
-      strongEl.style.color = "var(--success-color)";
-      strongEl.textContent = label;
-      descEl.appendChild(strongEl);
-      
-      descEl.appendChild(document.createTextNode("."));
-      descEl.appendChild(document.createElement('br'));
-      
-      const smallEl = document.createElement('small');
-      smallEl.style.color = "var(--text-secondary)";
-      smallEl.textContent = "El clicker comenzará automáticamente a pulsar este botón.";
-      descEl.appendChild(smallEl);
-    }
-    if (simpleTargetBox) simpleTargetBox.classList.add('has-target');
-  } else {
-    if (iconEl) iconEl.textContent = "✨";
-    if (titleEl) titleEl.textContent = "¿Qué quieres clickear?";
-    if (descEl) {
-      // Reconstruir de forma 100% segura para evitar innerHTML
-      descEl.textContent = "";
-      descEl.appendChild(document.createTextNode("Haz clic en "));
-      
-      const strongEl = document.createElement('strong');
-      strongEl.textContent = '"Apuntar Elemento"';
-      descEl.appendChild(strongEl);
-      
-      descEl.appendChild(document.createTextNode(" y toca el botón que quieras automatizar en la web."));
-    }
-    if (simpleTargetBox) simpleTargetBox.classList.remove('has-target');
   }
 }
 
@@ -1161,7 +212,37 @@ function setModoInterfaz(mode) {
   actualizarVisualSelectorSimple();
 }
 
-// Listeners principales
+// --- 🛠️ 3. REGISTRO DE EVENT LISTENERS DEL DOM ---
+
+// Sliders y Number Inputs de Intervalos
+const intervalRange = document.getElementById('clicker-interval-range');
+const intervalNumber = document.getElementById('clicker-interval-number');
+
+intervalRange.addEventListener('input', (e) => {
+  intervalNumber.value = e.target.value;
+  sincronizarControlesVelocidad(e.target.value);
+});
+
+intervalNumber.addEventListener('input', (e) => {
+  let val = parseInt(e.target.value);
+  if (isNaN(val)) val = 100;
+  if (val < 100) val = 100;
+  if (val > 10000) val = 10000;
+  intervalRange.value = val;
+  sincronizarControlesVelocidad(val);
+});
+
+// Shortcuts de tiempos
+document.querySelectorAll('.btn-time-shortcut').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const ms = btn.dataset.ms;
+    sincronizarControlesVelocidad(ms);
+  });
+});
+
+document.getElementById('clicker-preset').addEventListener('change', aplicarPresetSeleccionado);
+
+// Listeners principales de botones
 document.getElementById('btn-iniciar-clicker').addEventListener('click', iniciarClicker);
 document.getElementById('btn-detener-clicker').addEventListener('click', detenerClicker);
 document.getElementById('btn-inspect-element').addEventListener('click', comenzarSeleccionVisual);
@@ -1197,11 +278,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
-// Carga Inicial
-refrescarPanel();
-inicializarModoInterfaz();
-
-// Listeners de los botones de modo
+// Listeners de los botones de modo (Sencillo/Avanzado)
 document.getElementById('btn-mode-simple').addEventListener('click', () => setModoInterfaz('simple'));
 document.getElementById('btn-mode-advanced').addEventListener('click', () => setModoInterfaz('advanced'));
 
@@ -1252,7 +329,7 @@ if (soundModeCheckbox) {
   });
 }
 
-// --- 📁 6. CONTROL DE NAVEGACIÓN POR PESTAÑAS ---
+// --- 📁 4. CONTROL DE NAVEGACIÓN POR PESTAÑAS ---
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     // Quitar clase activa de todos los botones de pestaña
@@ -1268,31 +345,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// --- 🔊 7. EFECTOS DE SONIDO SINTETIZADOS EN SIDEBAR ---
-function reproducirSonidoArcadeSidebar() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    // Sonido retro "click" de tipo arcade (pitch agudo que desciende rápidamente)
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(850, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.08);
-    
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
-    
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + 0.08);
-  } catch (ae) {
-    console.error("Error al reproducir audio:", ae);
-  }
-}
+// --- 🚀 5. INICIALIZACIÓN ---
+refrescarPanel();
+inicializarModoInterfaz();

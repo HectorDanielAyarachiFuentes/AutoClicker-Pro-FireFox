@@ -42,30 +42,18 @@ async function refrescarPanel() {
 
   // 6. Mostrar/ocultar opciones de confirmación inteligentemente según la pestaña activa
   const esInstaOFacebook = tab.url && (tab.url.includes('instagram.com') || tab.url.includes('facebook.com'));
-  const cardModalSimple = document.querySelector('.special-modal-card');
-  const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
-  const cardModalAdvanced = chkAdv ? chkAdv.closest('.control-card') : null;
   const presetInstagramOption = document.querySelector('#clicker-preset option[value="instagram-unfollow-preset"]');
   const presetInstagramFollowOption = document.querySelector('#clicker-preset option[value="instagram-follow-preset"]');
   const presetFacebookOption = document.querySelector('#clicker-preset option[value="facebook-unfollow-preset"]');
 
   if (esInstaOFacebook) {
-    if (cardModalSimple) cardModalSimple.style.display = '';
-    if (cardModalAdvanced) cardModalAdvanced.style.display = '';
     if (tab.url.includes('instagram.com') && presetInstagramOption) presetInstagramOption.style.display = '';
     if (tab.url.includes('instagram.com') && presetInstagramFollowOption) presetInstagramFollowOption.style.display = '';
     if (tab.url.includes('facebook.com') && presetFacebookOption) presetFacebookOption.style.display = '';
   } else {
-    if (cardModalSimple) cardModalSimple.style.display = 'none';
-    if (cardModalAdvanced) cardModalAdvanced.style.display = 'none';
     if (presetInstagramOption) presetInstagramOption.style.display = 'none';
     if (presetInstagramFollowOption) presetInstagramFollowOption.style.display = 'none';
     if (presetFacebookOption) presetFacebookOption.style.display = 'none';
-    
-    // Desmarcar checkboxes si no estamos en una red que los use
-    const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-    if (chkSimple) chkSimple.checked = false;
-    if (chkAdv) chkAdv.checked = false;
     
     // Si el preset seleccionado actualmente es el de Instagram, pero no estamos en Instagram, resetearlo
     const selectPreset = document.getElementById('clicker-preset');

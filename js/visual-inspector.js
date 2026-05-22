@@ -244,11 +244,7 @@ browser.runtime.onMessage.addListener((message) => {
       } else if (textLower === 'siguiendo' || textLower === 'following') {
         document.getElementById('clicker-preset').value = 'instagram-unfollow-preset';
         document.getElementById('clicker-selector').value = 'button';
-        const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-        const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
-        if (chkSimple) chkSimple.checked = true;
-        if (chkAdv) chkAdv.checked = true;
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: Instagram Auto-Unfollow.\n📸 Activada auto-confirmación de ventanas emergentes "Dejar de seguir".\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
+        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: Instagram Auto-Unfollow.\n📸 Auto-confirmación inteligente de ventanas emergentes "Dejar de seguir" activada.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
       } else {
         document.getElementById('clicker-preset').value = 'custom';
         const logTextFilter = textFilter ? ` con texto "${textFilter}"` : '';
@@ -286,11 +282,7 @@ browser.runtime.onMessage.addListener((message) => {
       } else if (textLower.includes('siguiendo') || textLower.includes('following') || textLower === 'unfollow') {
         document.getElementById('clicker-preset').value = 'facebook-unfollow-preset';
         document.getElementById('clicker-selector').value = 'div[role="button"], button, a[role="button"]';
-        const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-        const chkAdv = document.getElementById('clicker-instagram-unfollow-advanced');
-        if (chkSimple) chkSimple.checked = true;
-        if (chkAdv) chkAdv.checked = true;
-        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: Facebook Dejar de seguir.\n🤖 Activada auto-confirmación de ventanas flotantes.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
+        escribirLogTerminal(`🎯 ¡Elemento apuntado con éxito!\n💡 Auto-detectado preset: Facebook Dejar de seguir.\n🤖 Auto-confirmación inteligente de ventanas flotantes activada.\n🤖 Iniciando secuencia de clics secuencial segura...`, true);
       } else {
         document.getElementById('clicker-preset').value = 'custom';
         const logTextFilter = textFilter ? ` con texto "${textFilter}"` : '';

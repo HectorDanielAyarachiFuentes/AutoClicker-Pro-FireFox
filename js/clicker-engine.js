@@ -102,8 +102,7 @@ async function iniciarClicker() {
   const esInsta = tab.url && tab.url.includes('instagram.com');
   const esFacebook = tab.url && tab.url.includes('facebook.com');
   const esPaginaConModal = esInsta || esFacebook;
-  const chkSimple = document.getElementById('clicker-instagram-unfollow-simple');
-  const instagramUnfollow = (chkSimple && esPaginaConModal) ? chkSimple.checked : false;
+  const instagramUnfollow = esPaginaConModal && (preset.includes('-unfollow-') || preset.includes('cancel'));
 
   if (!selector) {
     alert("Por favor, introduce un selector CSS válido.");
@@ -332,17 +331,33 @@ async function iniciarClicker() {
             const actJitterLevel = window.devtoolkitClicker.jitterLevel || levelJitter;
             const actSoundMode = typeof window.devtoolkitClicker.soundMode !== 'undefined' ? window.devtoolkitClicker.soundMode : isSoundMode;
 
+            let esIntentUnfollow = actPreset.includes('-unfollow-') || actPreset.includes('cancel');
+            let esIntentFollow = actPreset.includes('-follow-') || actPreset.includes('add-friend');
+            
+            // Si es custom y el modal de auto-confirmación está activado, asumimos unfollow solo si no es explícitamente follow
+            if (!esIntentUnfollow && !esIntentFollow) {
+               esIntentUnfollow = actInstagramUnfollow; 
+            }
+
             if (botonActual.dataset.dtkClicked === 'true') {
               yaClickeado = true;
-            } else if (!actPreset.includes('-unfollow-') && !actPreset.includes('cancel') && !actInstagramUnfollow) {
-              // Salvaguarda en vivo: si no es preset de dejar de seguir/cancelar, ignorar palabras bloqueadas
-              const palabrasBloqueadas = ['unfollow', 'unfallow', 'unfollowed', 'following', 'siguiendo', 'dejar de seguir', 'solicitado', 'requested', 'cancelar'];
-              const esUnfollowOrFollowing = palabrasBloqueadas.some(word => textoBoton.includes(word));
-              if (esUnfollowOrFollowing) {
+            } else if (esIntentFollow) {
+              // Si es un preset de follow explícito, ignorar botones que ya dicen siguiendo o unfollow
+              const palabrasBloqueadas = ['unfollow', 'unfallow', 'unfollowed', 'following', 'siguiendo', 'dejar de seguir', 'solicitado', 'requested', 'cancelar', 'pendiente', 'pending'];
+              if (palabrasBloqueadas.some(word => textoBoton.includes(word))) {
                 yaClickeado = true;
               }
-            } else if ((actPreset.includes('-unfollow-') || actInstagramUnfollow) && (textoBoton === 'follow' || textoBoton === 'seguir' || textoBoton === 'agregar a amigos' || textoBoton === 'add friend')) {
-              yaClickeado = true;
+            } else if (esIntentUnfollow) {
+              // Si es un preset de unfollow explícito, ignorar botones que dicen follow o seguir
+              if (textoBoton === 'follow' || textoBoton === 'seguir' || textoBoton === 'agregar a amigos' || textoBoton === 'add friend') {
+                yaClickeado = true;
+              }
+            } else {
+              // Por defecto (custom genérico), proteger contra unfollow accidental por seguridad
+              const palabrasBloqueadas = ['unfollow', 'unfallow', 'unfollowed', 'following', 'siguiendo', 'dejar de seguir', 'cancelar'];
+              if (palabrasBloqueadas.some(word => textoBoton.includes(word))) {
+                yaClickeado = true;
+              }
             }
 
             let baseInterval = (window.devtoolkitClicker && typeof window.devtoolkitClicker.intervalo !== 'undefined') ? window.devtoolkitClicker.intervalo : timeMs;
